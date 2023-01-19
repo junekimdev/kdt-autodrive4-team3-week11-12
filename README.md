@@ -12,13 +12,13 @@
 
 - Training Env: Deep Learning AMI GPU PyTorch 1.13.1 (Ubuntu 20.04) 20230103
 - Runtime Env: Xycar Nvidia Jetson TX2 Board
-- Datasets: ~3000 images took with Xycar USB Cam, which include traffic signs & lights
+- Datasets: 3000+ images took with Xycar USB Cam, which include traffic signs & lights
 - ML model: YOLOv3-tiny
-- Trans-platform: Pytorch -> Darknet -> ONNX -> TensorRT
+- ML Pipeline: Pytorch -> Darknet -> ONNX -> TensorRT
 
 ## S/W Architecture
 
-![architecture](archtecture.svg)
+![architecture](architecture.svg)
 
 ## Referenced Repos
 
@@ -80,9 +80,11 @@
 
 ## Coding Style
 
-Use `Google` style
+Use `ROS1` style
 
-> See: <https://google.github.io/styleguide/cppguide.html>
+> See: <http://wiki.ros.org/CppStyleGuide>
+
+- [Team's Naming Convention](naming_convention.md)
 
 ## License
 
