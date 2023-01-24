@@ -13,6 +13,7 @@ constexpr int16_t ANGLE_MAX = 50;
 
 enum struct Mode
 {
+  Init,
   Stop,
   Go,
   TurnLeft,
