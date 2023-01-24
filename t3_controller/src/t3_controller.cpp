@@ -15,6 +15,7 @@
 
 namespace control
 {
+const std::string NAME = "controller";
 const std::string SUB_TOPIC_LANE = "lane_data";
 const std::string SUB_TOPIC_OBJECT = "object_data";
 const std::string SUB_TOPIC_STOP_LINE = "stop_line_data";
@@ -25,8 +26,6 @@ constexpr float ANGLE_DIV = 2.f;
 
 class Controller
 {
-  std::string name;
-  bool enable_debug;
   ros::NodeHandle node;
   ros::Subscriber sub_lane;
   ros::Subscriber sub_object;
@@ -37,9 +36,10 @@ class Controller
   sensor::State sensor_state;
 
 public:
+  bool enable_debug;
+
   Controller()
   {
-    node.param<std::string>("controller_name", name, "controller");
     node.param<bool>("controller_enable_debug", enable_debug, false);
     sub_lane = node.subscribe(SUB_TOPIC_LANE, 1, &Controller::callbackLane, this);
     sub_object = node.subscribe(SUB_TOPIC_OBJECT, 1, &Controller::callbackObject, this);
@@ -58,7 +58,7 @@ public:
   // {
   //   xycar_msgs::xycar_motor msg;
   //   msg.header.stamp = ros::Time::now();
-  //   msg.header.frame_id = control::NODE_NAME;
+  //   msg.header.frame_id = control::NAME;
   //   msg.angle = control_state.angle;
   //   msg.speed = control_state.speed;
   //   return msg;
@@ -91,9 +91,9 @@ void Controller::control()
 
 int main(int argc, char** argv)
 {
-  ros::init(argc, argv, NODE_NAME);
+  ros::init(argc, argv, control::NAME);
   control::Controller controller;
-  ROS_INFO("%s is ONLINE", NODE_NAME.c_str());
+  ROS_INFO("%s is ONLINE", control::NAME.c_str());
 
   while (ros::ok())
   {
