@@ -132,7 +132,7 @@ public:
   {
     node.param<bool>("sensor_lane_cam_enable_debug", enable_debug, true);
     sub = node.subscribe(SUB_TOPIC, 1, &Sensor::callback, this);
-    pub = node.advertise<sensor_cam::cam_msg>(PUB_TOPIC, 1);
+    pub = node.advertise<t3_msgs::lane_data>(PUB_TOPIC, 1);
     if (enable_debug)
       cv::namedWindow(NAME);
   }
