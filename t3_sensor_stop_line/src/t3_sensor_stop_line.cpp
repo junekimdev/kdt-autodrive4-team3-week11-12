@@ -32,6 +32,7 @@ constexpr int HEIGHT = 480;
 class StopLine
 {
   bool detected;
+  int count;
 
 public:
   bool enable_debug;
@@ -80,7 +81,29 @@ void StopLine::publish()
 
 void StopLine::process()
 {
-  // TODO
+  cv::Mat gray_image;
+  cv::Mat blur_image;
+  cv::Mat canny_image;
+
+  cv::cvtColor(this->vFrame,gray_image, cv::COLOR_BGT2GRAY);
+  cv::GaussianBlur(gray_image, blur_image, cv::Size(5, 5), 2);
+  cv::Canny(blur_image, canny_image, 50, 150);
+  cv::Mat roi = canny_image(cv::Rect(100, 370, 440, 50));
+  
+  std::vector<cv::Vec4i> all_lines;
+  cv::HoughLinesP(roi, all_lines, 1.0, CV_PI / 180.0, 40, 40, 5);
+  if (all_lines.size() >= 0){
+    count = 0;
+    for(size_t i = 0 ; i <all_lines.size(); i++){
+      cv::Vec4i l = all_lines[i];
+      if (abs(l[1]-l[3]) < 10)
+        //line(this->vFrame, cv::Point(l[0] +100, l[1]+370), cv::Point(l[2]+100, l[3]+370), cv::Scalar(0,0,255), 3, cv::LINE_AA);
+        count++;
+    }
+  }
+  if (count >= 4)
+    this->publish();
+  else 
 }
 }  // namespace sensor
 
