@@ -15,7 +15,7 @@ add_message_files(
   BoundingBox.msg
   lane_data.msg
   object_data.msg
-  stop_line.msg
+  stop_line_data.msg
   traffic_light_data.msg
 )
 
