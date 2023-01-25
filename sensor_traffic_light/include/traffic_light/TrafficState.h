@@ -2,12 +2,10 @@
 #define TRAFFIC_STATE_H
 #include "ros/console.h"
 #include "ros/ros.h"
-#include <cv_bridge/cv_bridge.h>
 #include <sensor_msgs/Image.h>
 #include "t3_msgs/BoundingBox.h"
 #include "t3_msgs/traffic_light_data.h"
 #include "t3_msgs/traffic_light_image.h"
-#include <cv_bridge/cv_bridge.h>
 #include <opencv2/opencv.hpp>
 #include <vector>
 
@@ -110,7 +108,7 @@ class Image_process{
                 for (int j = 0; j< traffic.width_; j++){
                     if (th_img.at<int>(i,j)==0){
                         count1++;
-                    }else if (th_img.at<int>(i+static_cast<int>(0.65*traffic.height_*416),j)==()){
+                    }else if (th_img.at<int>(i+static_cast<int>(0.65*traffic.height_*416),j)==0){
                         count2++;
                     }
                 }
