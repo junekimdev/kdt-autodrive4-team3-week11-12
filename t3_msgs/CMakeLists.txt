@@ -18,6 +18,7 @@ add_message_files(
   object_data.msg
   stop_line_data.msg
   traffic_light_data.msg
+  traffic_light_image.msg
 )
 
 ## Generate added messages and services with any dependencies listed here
