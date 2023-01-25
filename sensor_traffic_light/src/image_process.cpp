@@ -1,6 +1,6 @@
 #include "TrafficState.h"
 
-
+const std::string NODE_NAME = "traffic_state";
 
 int main(int argc, char** argv) {
   // Init
