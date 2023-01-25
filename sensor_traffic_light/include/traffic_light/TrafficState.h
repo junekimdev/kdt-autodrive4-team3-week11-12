@@ -40,14 +40,12 @@ struct Traffic
     :height_(0),weight_(0),square_(0){};
 
     void update(const t3_msgs::traffic_light_image::ConstPtr& msg){
-        cv_bridge::CvImagePtr cv_ptr = cv_bridge::toCvCopy(msg.image_data, sensor_msgs::image_encodings::BGR8);
-        
+        image_ = cv::Mat(352, 352, CV_8UC3, const_cast<uchar*>(&msg->data[0]), msg->step);
         boundingBox_ = BoundingBox(msg->bounding_box.probability, msg->xmin, msg->ymin, msg->xmax, msg->ymax);
 
         height_ = boundingBox_.ymax_ - boundingBox_.ymin_;
         weight_ = boundingBox_.xmax_ - boundingBox_.xmin_;
         square_ = height_ * weight_;
-        image_ = cv_ptr->image;
     };
 };
 
