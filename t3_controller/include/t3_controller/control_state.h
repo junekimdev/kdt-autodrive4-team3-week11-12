@@ -4,7 +4,7 @@
 #include <string>
 #include <vector>
 
-namespace control
+namespace control_state
 {
 
 constexpr int16_t ANGLE_CENTER = 0;
@@ -31,7 +31,11 @@ struct State
   {
   }
 
-  void reduce(){};
+  void reduce(Mode mode, int angle, int speed){
+    this->mode = mode;
+    this->angle = angle;
+    this->speed = speed;
+  }
 };
 
 }  // namespace control

@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.0.2)
-project(t3_contorller)
+project(t3_controller)
 
 find_package(catkin REQUIRED COMPONENTS
   roscpp
@@ -12,6 +12,7 @@ catkin_package(
 )
 
 include_directories(
+  include
   ${catkin_INCLUDE_DIRS}
 )
 
