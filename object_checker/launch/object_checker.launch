@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<!DOCTYPE launch>
+<launch>
+  <include file="$(find xycar_motor)/launch/xycar_motor.launch"/>
+  <!-- cam -->
+  <include file="$(find usb_cam)/launch/usb_cam-noviewer.launch"/>
+
+  <!-- processor -->
+  <node name="yolov3_detector" pkg="objects_detection" type="trt_detection.py" output="screen" />
+  <!--<node name="detector_stop_line" pkg="detector_stop_line" type="detector_stop_line" output="screen"/>-->
+  <node name="object_checker" pkg="object_checker" type="object_checker" output="screen"/>
+</launch>
