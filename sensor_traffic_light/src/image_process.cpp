@@ -10,7 +10,6 @@ int main(int argc, char** argv) {
   
   //ROS_INFO("%s is ONLINE", NODE_NAME.c_str());
 
-  controller.start();
   while (ros::ok()) {
     ros::spinOnce();
     image_process.process_image();
