@@ -12,12 +12,21 @@
 
 namespace color
 {
+  /*
 static constexpr cv::Scalar WHITE = cv::Scalar(255, 255, 255);
 static constexpr cv::Scalar BLACK = cv::Scalar(0, 0, 0);
 static constexpr cv::Scalar RED = cv::Scalar(0, 0, 255);
 static constexpr cv::Scalar GREEN = cv::Scalar(0, 255, 0);
 static constexpr cv::Scalar BLUE = cv::Scalar(255, 0, 0);
 static constexpr cv::Scalar YELLOW = cv::Scalar(0, 255, 255);
+*/
+const cv::Scalar WHITE = cv::Scalar(255, 255, 255);
+const cv::Scalar BLACK = cv::Scalar(0, 0, 0);
+const cv::Scalar RED = cv::Scalar(0, 0, 255);
+const cv::Scalar GREEN = cv::Scalar(0, 255, 0);
+const cv::Scalar BLUE = cv::Scalar(255, 0, 0);
+const cv::Scalar YELLOW = cv::Scalar(0, 255, 255);
+
 }  // namespace color
 
 namespace sensor
@@ -119,8 +128,8 @@ class LaneCam
   cv::Mat vFrame;
   cv::Rect roiRectL;
   cv::Rect roiRectR;
-  bool leftDetected;
-  bool rightDetected;
+  bool left_detected;
+  bool right_detected;
   int lpos;
   int rpos;
 
@@ -128,10 +137,10 @@ public:
   bool enable_debug;
 
   LaneCam()
-    : roiRectL(ROI_L_INIT), roiRectR(ROI_R_INIT), leftDetected(false), rightDetected(false), lpos(0), rpos(WIDTH - 1)
+    : roiRectL(ROI_L_INIT), roiRectR(ROI_R_INIT), left_detected(false), right_detected(false), lpos(0), rpos(WIDTH - 1)
   {
     node.param<bool>("sensor_lane_cam_enable_debug", enable_debug, true);
-    sub = node.subscribe(SUB_TOPIC, 1, &Sensor::callback, this);
+    sub = node.subscribe(SUB_TOPIC, 1, &LaneCam::callback, this);
     pub = node.advertise<t3_msgs::lane_data>(PUB_TOPIC, 1);
     if (enable_debug)
       cv::namedWindow(NAME);
@@ -160,11 +169,11 @@ void LaneCam::publish()
 {
   t3_msgs::lane_data msg;
   msg.header.stamp = ros::Time::now();
-  msg.header.frame_id = name;
+  msg.header.frame_id = NAME;
 
   msg.width = vFrame.cols;
-  msg.leftDetected = leftDetected;
-  msg.rightDetected = rightDetected;
+  msg.left_detected = left_detected;
+  msg.right_detected = right_detected;
   msg.lpos = lpos;
   msg.rpos = rpos;
 
@@ -231,32 +240,32 @@ void LaneCam::process()
   else
   {
     // All lost
-    if (leftDetected)
+    if (left_detected)
     {
       // Stand by to find L line
       roiRectL = ROI_FULL;
       roiRectR = ROI_R_NULL;
     }
-    else if (rightDetected)
+    else if (right_detected)
     {
       // Stand by to find R line
       roiRectL = ROI_L_NULL;
       roiRectR = ROI_FULL;
     }
   }
-  leftDetected = goodL;
-  rightDetected = goodR;
+  left_detected = goodL;
+  right_detected = goodR;
 
   if (enable_debug)
   {
-    cv::rectangle(vFrame, roiRectL, BLACK, 2);
-    cv::rectangle(vFrame, roiRectR, BLACK, 2);
-    cv::drawMarker(vFrame, cv::Point(lpos, SCAN_ROW), YELLOW, cv::MARKER_TILTED_CROSS, 10, 2, cv::LINE_AA);
-    cv::drawMarker(vFrame, cv::Point(rpos, SCAN_ROW), BLUE, cv::MARKER_TILTED_CROSS, 10, 2, cv::LINE_AA);
-    cv::line(vFrame, cv::Point(0, SCAN_ROW), cv::Point(WIDTH, SCAN_ROW), BLUE, 1);
-    cv::line(vFrame, cv::Point(0, SCAN_ROW + ROI_GAP), cv::Point(WIDTH, SCAN_ROW + ROI_GAP), BLUE, 1);
-    cv::line(vFrame, cv::Point(0, SCAN_ROW - ROI_GAP), cv::Point(WIDTH, SCAN_ROW - ROI_GAP), BLUE, 1);
-    cv::imshow(WINDOW_TITLE, vFrame);
+    cv::rectangle(vFrame, roiRectL, color::BLACK, 2);
+    cv::rectangle(vFrame, roiRectR, color::BLACK, 2);
+    cv::drawMarker(vFrame, cv::Point(lpos, SCAN_ROW), color::YELLOW, cv::MARKER_TILTED_CROSS, 10, 2, cv::LINE_AA);
+    cv::drawMarker(vFrame, cv::Point(rpos, SCAN_ROW), color::BLUE, cv::MARKER_TILTED_CROSS, 10, 2, cv::LINE_AA);
+    cv::line(vFrame, cv::Point(0, SCAN_ROW), cv::Point(WIDTH, SCAN_ROW), color::BLUE, 1);
+    cv::line(vFrame, cv::Point(0, SCAN_ROW + ROI_GAP), cv::Point(WIDTH, SCAN_ROW + ROI_GAP), color::BLUE, 1);
+    cv::line(vFrame, cv::Point(0, SCAN_ROW - ROI_GAP), cv::Point(WIDTH, SCAN_ROW - ROI_GAP), color::BLUE, 1);
+    cv::imshow("WINDOW_TITLE", vFrame);
   }
   publish();
 }
