@@ -116,12 +116,15 @@ namespace control{
     angle = correctAngle(angle);
     speed = 5;
     mode = control_state::Mode::Go;
-    
+    /*
     if(control_state_.started){
       control_state_.reduce(mode, angle, speed);
       pub.publish(create_msg());
     }
-    
+    */
+
+    control_state_.reduce(mode, angle, speed);
+    pub.publish(create_msg());
     std::cout<< angle << std::endl;
     
   }
