@@ -10,7 +10,7 @@ find_package(catkin REQUIRED COMPONENTS
 find_package(OpenCV 4.5.5 REQUIRED PATHS ~/OpenCV4/install/lib/cmake/opencv4)
 
 catkin_package(
- INCLUDE_DIRS include
+ INCLUDE_DIRS 
 )
 
 include_directories(
@@ -18,9 +18,9 @@ include_directories(
   ${OpenCV_INCLUDE_DIRS}
 )
 
-add_executable(${PROJECT_NAME} src/${PROJECT_NAME}.cpp)
-add_dependencies(${PROJECT_NAME} ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-target_link_libraries(${PROJECT_NAME}
-  ${catkin_LIBRARIES}
-  ${OpenCV_LIBRARIES}
-)
+# add_executable(${PROJECT_NAME} src/${PROJECT_NAME}.cpp)
+# add_dependencies(${PROJECT_NAME} ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+# target_link_libraries(${PROJECT_NAME}
+#   ${catkin_LIBRARIES}
+#   ${OpenCV_LIBRARIES}
+# )
