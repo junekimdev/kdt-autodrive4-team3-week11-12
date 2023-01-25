@@ -200,7 +200,7 @@ class yolov3_trt(object):
                 # image: NCHW format
                 traffic_msg.step = image.shape[1]
                 flat = image.reshape(1, image.shape[1]*image.shape[2]*image.shape[3])
-                traffic_msg.image_data = flat.tolist() if image.data.contiguous else flat.copy().tolist()
+                traffic_msg.image_data = flat.tobytes() if image.data.contiguous else flat.copy().tobytes()
                 self.traffic_pub.publish(traffic_msg)
         if len(obj_msg.bounding_boxes):
             self.detection_pub.publish(obj_msg)
