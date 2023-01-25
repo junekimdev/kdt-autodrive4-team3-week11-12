@@ -18,6 +18,7 @@ const std::string NODE_NAME = "controller";
 const std::string SUB_TOPIC_CAM = "cam_data";
 const std::string PUB_TOPIC = "xycar_motor";
 const std::string SUB_OBJECT = "yolov3_trt_ros/detections";
+// const std::string SUB_TRAFFIC = "yolov3_trt_ros/traffic_lights";
 constexpr int FREQ = 140;  // Hz
 constexpr int SPEED = 10;
 constexpr float ANGLE_DIV = 2.f;
@@ -27,6 +28,7 @@ class Controller {
   ros::NodeHandle node;
   ros::Subscriber sub_cam;
   ros::Subscriber sub_object;
+  ros::Subscriber sub_traffic_lights;
   ros::Publisher pub;
   SensorState sensorState;
   ControlState controlState;
@@ -44,6 +46,9 @@ public:
         this->node.subscribe(SUB_TOPIC_CAM, 1, &Controller::callbackCam, this);
     this->sub_object = 
         this->node.subscribe(SUB_OBJECT,1, &Controller::callbackObject, this);
+    // thid->sub_traffic_lights = 
+        // this->node.subscribe(SUB_TRAFFIC, 1, &Controller::callbackTraffic,this);
+
     this->pub = this->node.advertise<xycar_msgs::xycar_motor>(PUB_TOPIC, 1);
   }
 
@@ -58,6 +63,7 @@ public:
 
   void callbackCam(const sensor_cam::cam_msg::ConstPtr& msg);
   void callbackObject(const yolov3_trt_ros::BoundingBoxes::ConstPtr& msg);
+  // void callbackTraffic(const yolov3_trt_ros::TrafficBoxes::ConstPtr& msg);
   void control();
   void start();
 };

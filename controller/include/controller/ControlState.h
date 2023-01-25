@@ -12,6 +12,8 @@
 #include "xycar_msgs/xycar_motor.h"
 #include "yolov3_trt_ros/BoundingBox.h"
 #include "yolov3_trt_ros/BoundingBoxes.h"
+#include "yolov3_trt_ros/TrafficBox.h"
+#include "yolov3_trt_ros/TrafficBoxes.h"
 
 // Const
 const std::string CONTROLLER_NAME = "controller";
@@ -70,7 +72,6 @@ struct SensorObjectState{
 
 void SensorObjectState::reduce(const yolov3_trt_ros::BoundingBoxes::ConstPtr& msg){
   this->update(msg);
-  
 }
 
 void SensorObjectState::update(const yolov3_trt_ros::BoundingBoxes::ConstPtr& msg){
@@ -80,15 +81,15 @@ void SensorObjectState::update(const yolov3_trt_ros::BoundingBoxes::ConstPtr& ms
   this->objects = {};
   //std::cout << typeid(boxes).name() << std::endl;
   if(msg->bounding_boxes.size() >0){
-	for(auto box: msg->bounding_boxes){
-		auto object = ObjectState(box.id,
-			box.probability,
-			box.xmin,
-			box.ymin,
-			box.xmax,
-			box.ymax);
-	objects.push_back(object);
-       }
+    for(auto box: msg->bounding_boxes){
+      auto object = ObjectState(box.id,
+        box.probability,
+        box.xmin,
+        box.ymin,
+        box.xmax,
+        box.ymax);
+        objects.push_back(object);
+    }
   }else{
   	std::cout << "NO MESSAGE" << std::endl;
   }
