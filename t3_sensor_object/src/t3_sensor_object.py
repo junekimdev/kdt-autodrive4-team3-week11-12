@@ -63,6 +63,7 @@ from data_processing import PreprocessYOLO, PostprocessYOLO, ALL_CATEGORIES
 import common
 
 NAME = "yolov3-trt"
+FILE_DIR = "/home/nvidia/xycar_ws/src/t3_sensor_object/src"
 SUB_TOPIC = "/usb_cam/image_raw"
 PUB_TOPIC_OBJECT = "object_data"
 PUB_TOPIC_TRAFFIC = "traffic_light_image"
@@ -82,8 +83,8 @@ class yolov3_trt(object):
             enable_debug = rospy.get_param("sensor_object_enable_debug")
         self.show_img = enable_debug
         self.num_class = NUM_CLASS
-        self.cfg_file_path = os.path.join(os.getcwd(), "yolov3-tiny_tstl352.cfg")
-        self.engine_file_path = os.path.join(os.getcwd(), "t3_model.trt")
+        self.cfg_file_path = os.path.join(FILE_DIR, "yolov3-tiny_tstl352.cfg")
+        self.engine_file_path = os.path.join(FILE_DIR, "t3_model.trt")
         width, height, masks, anchors = parse_cfg_wh(self.cfg_file_path)
 
         # Two-dimensional tuple with the target network's (spatial) input resolution in HW ordered
@@ -196,10 +197,10 @@ class yolov3_trt(object):
                 traffic_msg.header.stamp = rospy.Time.now()
                 traffic_msg.header.frame_id = NAME+"traffic"
                 traffic_msg.bounding_box = msg_bbox
-                channels = image.shape[-1] if image.ndim == 3 else 1
-                traffic_msg.step = channels
-                flat = image.reshape(1, image.shape[0]*image.shape[1]*channels)
-                traffic_msg.image_data = flat if image.data.contiguous else flat.copy()
+                # image: NCHW format
+                traffic_msg.step = image.shape[1]
+                flat = image.reshape(1, image.shape[1]*image.shape[2]*image.shape[3])
+                traffic_msg.image_data = flat.tolist() if image.data.contiguous else flat.copy().tolist()
                 self.traffic_pub.publish(traffic_msg)
         if len(obj_msg.bounding_boxes):
             self.detection_pub.publish(obj_msg)
