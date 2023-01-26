@@ -24,14 +24,16 @@ public:
 
   Processor()
   {
-    this->sub = node.subscribe(SUB_TOPIC, 1, &Processor::callbackTraffic, this);
+    this->sub = node.subscribe(SUB_TOPIC, 1, &Processor::callback, this);
     this->pub = node.advertise<t3_msgs::traffic_light_data>(PUB_TOPIC, 1);
   };
-  void callbackTraffic(const t3_msgs::traffic_light_image::ConstPtr& msg)
+
+  void callback(const t3_msgs::traffic_light_image::ConstPtr& msg)
   {
     light_image = cv::Mat(IMG_SIZE, IMG_SIZE, CV_8UC3, const_cast<uchar*>(&msg->image_data[0]), msg->step);
     traffic_light = TrafficLight(msg->bounding_box);
   };
+
   void publish()
   {
     if (traffic_light.color != -1)
@@ -44,6 +46,7 @@ public:
       pub.publish(msg);
     }
   };
+
   void detect_traffic_light()
   {
     cv::Scalar lower_blue(160, 50, 50);
