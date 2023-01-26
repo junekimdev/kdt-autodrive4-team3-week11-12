@@ -29,7 +29,7 @@ struct Traffic
 public:
   BoundingBox boundingBox_;
   int height_;
-  int weight_;
+  int width_;
   int square_;
   cv::Mat image_;
   // RED = 0; YELLOW = 1; GREEN = 2;
@@ -43,8 +43,8 @@ public:
       boundingBox_ = BoundingBox(msg->bounding_box.probability, msg->xmin, msg->ymin, msg->xmax, msg->ymax);
 
       height_ = boundingBox_.ymax_ - boundingBox_.ymin_;
-      weight_ = boundingBox_.xmax_ - boundingBox_.xmin_;
-      square_ = height_ * weight_;
+      width_ = boundingBox_.xmax_ - boundingBox_.xmin_;
+      square_ = height_ * width_;
     };
 };
 
