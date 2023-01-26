@@ -54,15 +54,15 @@ public:
   void callbackTrafficLight(const t3_msgs::traffic_light_data::ConstPtr& msg);
   void control();
 
-  // xycar_msgs::xycar_motor create_msg()
-  // {
-  //   xycar_msgs::xycar_motor msg;
-  //   msg.header.stamp = ros::Time::now();
-  //   msg.header.frame_id = control::NAME;
-  //   msg.angle = control_state.angle;
-  //   msg.speed = control_state.speed;
-  //   return msg;
-  // }
+  xycar_msgs::xycar_motor create_msg()
+  {
+    xycar_msgs::xycar_motor msg;
+    msg.header.stamp = ros::Time::now();
+    msg.header.frame_id = control::NAME;
+    msg.angle = control_state.angle;
+    msg.speed = control_state.speed;
+    return msg;
+  }
 };
 
 void Controller::callbackLane(const t3_msgs::lane_data::ConstPtr& msg)

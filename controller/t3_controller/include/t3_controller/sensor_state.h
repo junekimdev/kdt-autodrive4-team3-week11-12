@@ -84,15 +84,21 @@ struct BoundingBox
 
 struct Object
 {
-  BoundingBox boundingBox;
+  std::vector<BoundingBox> boundingBoxes;
   void reduce(const t3_msgs::object_data::ConstPtr& msg)
   {
-    boundingBox.id = msg->id;
-    boundingBox.xmin = msg->xmin;
-    boundingBox.ymin = msg->ymin;
-    boundingBox.xmax = msg->xmax;
-    boundingBox.ymax = msg->ymax;
-    boundingBox.probability = msg->probability;
+    boundingBoxes.clear();
+    auto boxes = msg->bounding_boxes;
+    for(auto& box : boxes){
+      BoundingBox boundingBox = BoundingBox();
+      boundingBox.id = msg->id;
+      boundingBox.xmin = msg->xmin;
+      boundingBox.ymin = msg->ymin;
+      boundingBox.xmax = msg->xmax;
+      boundingBox.ymax = msg->ymax;
+      boundingBox.probability = msg->probability;
+      boundingBoxes.emplace_back(boundingBox);
+    }
   };
 };
 
