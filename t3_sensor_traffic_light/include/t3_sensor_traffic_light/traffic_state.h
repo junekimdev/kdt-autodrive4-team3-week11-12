@@ -14,37 +14,37 @@ const std::string PUB_TOPIC = "traffic_light_data";
 
 struct BoundingBox
 {
-  float probability_;
-  int xmin_;
-  int ymin_;
-  int xmax_;
-  int ymax_;
+  float probability;
+  int xmin;
+  int ymin;
+  int xmax;
+  int ymax;
 
   BoundingBox(float probability, int xmin, int ymin, int xmax, int ymax)
-    : probability_(0), xmin_(0), ymin_(0), xmax_(0), ymax_(0){};
+    : probability(0), xmin(0), ymin(0), xmax(0), ymax(0){};
 }
 
 struct Traffic
 {
 public:
-  BoundingBox boundingBox_;
-  int height_;
-  int width_;
-  int square_;
-  cv::Mat image_;
+  BoundingBox boundingBox;
+  int height;
+  int width;
+  int square;
+  cv::Mat image;
   // RED = 0; YELLOW = 1; GREEN = 2;
   int8_t color_ = -1;
 
-    :height_(0),weight_(0),square_(0),image_(cv::Mat(352,352,CV_8UC3)){};
+    :height(0),weight(0),square(0),image(cv::Mat(352,352,CV_8UC3)){};
 
     void update(const t3_msgs::traffic_light_image::ConstPtr& msg)
     {
       image_ = cv::Mat(352, 352, CV_8UC3, const_cast<uchar*>(&msg->data[0]), msg->step);
-      boundingBox_ = BoundingBox(msg->bounding_box.probability, msg->xmin, msg->ymin, msg->xmax, msg->ymax);
+      boundingBox = BoundingBox(msg->bounding_box.probability, msg->xmin, msg->ymin, msg->xmax, msg->ymax);
 
-      height_ = boundingBox_.ymax_ - boundingBox_.ymin_;
-      width_ = boundingBox_.xmax_ - boundingBox_.xmin_;
-      square_ = height_ * width_;
+      height = boundingBox.ymax - boundingBox.ymin;
+      width = boundingBox.xmax - boundingBox.xmin;
+      square = height * width;
     };
 };
 
@@ -103,26 +103,26 @@ class Image_process
       cv::Mat th_img;
       cv::threshold(gray_img, th_img, 1, 255, cv::THRESH_BINARY_INV);
 
-      int row = static_cast<int>(traffic.height_ * 416 * 0.3);
+      int row = static_cast<int>(traffic.height * 416 * 0.3);
 
       int count1 = 0;
       int count2 = 0;
       for (int i = 0; i < row; i++)
       {
-        for (int j = 0; j < traffic.width_; j++)
+        for (int j = 0; j < traffic.width; j++)
         {
           if (th_img.at<int>(i, j) == 0)
           {
             count1++;
           }
-          else if (th_img.at<int>(i + static_cast<int>(0.66 * traffic.height_ * 416), j) == 0)
+          else if (th_img.at<int>(i + static_cast<int>(0.66 * traffic.height * 416), j) == 0)
           {
             count2++;
           }
         }
       }
-      int decision1 = static_cast<int>(count1 / traffic.square_ * 1000);
-      int decision2 = static_cast<int>(count2 / traffic.square_ * 1000);
+      int decision1 = static_cast<int>(count1 / traffic.square * 1000);
+      int decision2 = static_cast<int>(count2 / traffic.square * 1000);
       if (decision1 == 0 && decision2 == 0)
       {
         traffic.color_ = 1;
