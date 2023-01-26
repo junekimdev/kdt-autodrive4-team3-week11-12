@@ -24,8 +24,11 @@ class Processor
   TrafficLight traffic_light;
 
 public:
+  bool enable_debug;
+
   Processor()
   {
+    node.param<bool>("sensor_traffic_light_enable_debug", enable_debug, true);
     this->sub = node.subscribe(SUB_TOPIC, 1, &Processor::callback, this);
     this->pub = node.advertise<t3_msgs::traffic_light_data>(PUB_TOPIC, 1);
   };
@@ -45,7 +48,7 @@ void Processor::publish()
   t3_msgs::traffic_light_light_data msg;
   msg.header.stamp = ros::Time::now();
   msg.header.frame_id = NAME;
-  msg.detected = traffic_light.color != -1;
+  msg.detected = true;
   msg.color = traffic_light.color;
   msg.bounding_box = traffic_light.bounding_box;
   pub.publish(msg);
@@ -108,6 +111,8 @@ void Processor::process()
   }
 
   publish();
+  if (enable_debug)
+    ROS_INFO("Traffic light #[%d] detected", traffic_light.color);
 };
 
 }  // namespace sensor
