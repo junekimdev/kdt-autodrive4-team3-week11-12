@@ -15,15 +15,16 @@ constexpr int IMG_SIZE = 352;
 
 struct BoundingBox
 {
+  int id;
   float probability;
   int xmin;
   int ymin;
   int xmax;
   int ymax;
 
-  BoundingBox() : probability(0.f), xmin(0), ymin(0), xmax(0), ymax(0){};
-  BoundingBox(float probability, int xmin, int ymin, int xmax, int ymax)
-    : probability(probability), xmin(xmin), ymin(ymin), xmax(xmax), ymax(ymax){};
+  BoundingBox() : id(5), probability(0.f), xmin(0), ymin(0), xmax(0), ymax(0){};
+  BoundingBox(t3_msgs::BoundingBox bbox)
+    : id(bbox.id), probability(bbox.probability), xmin(bbox.xmin), ymin(bbox.ymin), xmax(bbox.xmax), ymax(bbox.ymax){};
 }
 
 struct Traffic
@@ -42,8 +43,7 @@ public:
   void update(const t3_msgs::traffic_light_image::ConstPtr& msg)
   {
     image = cv::Mat(IMG_SIZE, IMG_SIZE, CV_8UC3, const_cast<uchar*>(&msg->image_data[0]), msg->step);
-    t3_msgs::BoundingBox img_bbox = msg->bounding_box;
-    bounding_box = BoundingBox(img_bbox.probability, img_bbox.xmin, img_bbox.ymin, img_bbox.xmax, img_bbox.ymax);
+    bounding_box = BoundingBox(msg->bounding_box);
 
     height = bounding_box.ymax - bounding_box.ymin;
     width = bounding_box.xmax - bounding_box.xmin;
