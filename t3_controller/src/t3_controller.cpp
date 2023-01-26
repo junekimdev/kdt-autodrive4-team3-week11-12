@@ -2,6 +2,10 @@
 
 #include "ros/console.h"
 #include "ros/ros.h"
+#include <vector>
+#include <unistd.h>
+#include <iostream>
+
 
 // Messages
 #include "t3_msgs/lane_data.h"
@@ -23,12 +27,23 @@ namespace control{
   const std::string SUB_TOPIC_STOP_LINE = "stop_line_data";
   const std::string SUB_TOPIC_TRAFFIC_LIGHT = "traffic_light_data";
   const std::string PUB_TOPIC = "xycar_motor";
-  constexpr int SPEED = 10;
+  constexpr int SPEED = 5;
   constexpr float ANGLE_DIV = 2.f;
 
   control_state::State control_state_;
   sensor_state::State sensor_state_;
 
+  struct TmpObject
+  {
+    int id;
+    int xmin;
+    int ymin;
+    int xmax;
+    int ymax;
+    float probability;
+    TmpObject(){};
+
+ };
 
 
   class Controller
@@ -46,15 +61,15 @@ namespace control{
     {
       node.param<bool>("controller_enable_debug", enable_debug, false);
       this->sub_lane = this->node.subscribe(SUB_TOPIC_LANE, 1, &Controller::callbackLane, this);
-      //sub_object = node.subscribe(SUB_TOPIC_OBJECT, 1, &Controller::callbackObject, this);
-      //sub_stop_line = node.subscribe(SUB_TOPIC_STOP_LINE, 1, &Controller::callbackStopLine, this);
+      this->sub_object = this->node.subscribe(SUB_TOPIC_OBJECT, 1, &Controller::callbackObject, this);
+      this->sub_stop_line = this->node.subscribe(SUB_TOPIC_STOP_LINE, 1, &Controller::callbackStopLine, this);
       //sub_traffic_light = node.subscribe(SUB_TOPIC_TRAFFIC_LIGHT, 1, &Controller::callbackTrafficLight, this);
       pub = node.advertise<xycar_msgs::xycar_motor>(PUB_TOPIC, 1);
     }
 
     void callbackLane(const t3_msgs::lane_data::ConstPtr& msg);
-    //void callbackObject(const t3_msgs::object_data::ConstPtr& msg);
-    //void callbackStopLine(const t3_msgs::stop_line_data::ConstPtr& msg);
+    void callbackObject(const t3_msgs::object_data::ConstPtr& msg);
+    void callbackStopLine(const t3_msgs::stop_line_data::ConstPtr& msg);
     //void callbackTrafficLight(const t3_msgs::traffic_light_data::ConstPtr& msg);
     void control();
   };
@@ -74,6 +89,7 @@ namespace control{
     msg.header.frame_id = control::NAME;
     msg.angle = control_state_.angle;
     msg.speed = control_state_.speed;
+    
     return msg;
   }
   
@@ -83,49 +99,149 @@ namespace control{
   {
     sensor_state_.cam.reduce(msg);
   }
-  /*
+  
   void Controller::callbackObject(const t3_msgs::object_data::ConstPtr& msg)
   {
-    //sensor_state.object.reduce(msg)
+    sensor_state_.object.reduce(msg);
   }
+  
   void Controller::callbackStopLine(const t3_msgs::stop_line_data::ConstPtr& msg)
   {
-    //sensor_state.stop_line.reduce(msg)
+    sensor_state_.stop_line.reduce(msg);
   }
+  /*
   void Controller::callbackTrafficLight(const t3_msgs::traffic_light_data::ConstPtr& msg)
   {
     //sensor_state.traffic_light.reduce(msg)
   }
-  */
+ */ 
   void Controller::control()
   {
+    std::vector<control::TmpObject> tmpObject;
 
-    //std::cout << "spin" << std::endl;
+    // sensor_state_.object.boundingBoxes.size()+sensor_state_.traffic_light.count
+    if(sensor_state_.object.boundingBoxes.size()>0)
+    {
+      for(auto objectBox :sensor_state_.object.boundingBoxes){
+        control::TmpObject tmp;
+        tmp.id = objectBox.id;
+        tmp.xmin = objectBox.xmin;
+        tmp.ymin = objectBox.ymin;
+        tmp.xmax = objectBox.xmax;
+        tmp.ymax = objectBox.ymax;
+        tmp.probability = objectBox.probability;
+        tmpObject.emplace_back(tmp);
+      }
+    }
+    if(sensor_state_.traffic_light.count>0){
+      control::TmpObject tmp1;
+        tmp1.id = sensor_state_.traffic_light.boundingBox.id;
+        tmp1.xmin = sensor_state_.traffic_light.boundingBox.xmin;
+        tmp1.xmax = sensor_state_.traffic_light.boundingBox.xmax;
+        tmp1.ymax = sensor_state_.traffic_light.boundingBox.ymax;
+        tmp1.probability = sensor_state_.traffic_light.boundingBox.probability;
+        tmpObject.emplace_back(tmp1);
+    }
+    int anchor_box_min = 2500;
+    int anchor_box_max = 5000;
+    float ratio_min, ratio_max;
+    float square;
+    int new_id = -1;
+    for(auto& i :tmpObject){
+      int height = i.ymax-i.ymin;
+      int weight = i.xmax-i.xmin;
+      float ratio = height/weight;
+      std::cout << ratio << std::endl;
+      if(i.id != 5)
+      {
+        ratio_min = 0.75;
+        ratio_max = 1.725;
+        square = weight * height;
+      } 
+      else
+      {
+        ratio_min = 1.35;
+        ratio_max = 2.4;
+        square = weight * height * 0.75;
+      }
+
+      if (ratio_min < ratio && ratio_max > ratio){
+        if (weight > 31 && weight <93){
+          if (anchor_box_min> square){
+            continue;
+          }
+          else {
+            anchor_box_min = square;
+            new_id = i.id;
+            }
+        }
+      }
+    }
+
+
+
 
     // TODO
+    // switch (sensor_state_)
+    // {
+    // case /* constant-expression */:
+    //   /* code */
+    //   break;
     
-    float cposViewCam =
+    // default:
+    //   break;
+    // }
+
+    float cposViewCam;
+    if(new_id == 0){
+      cposViewCam = sensor_state_.cam.lpos + 30;
+
+    }
+    else if(new_id == 1){
+      cposViewCam = sensor_state_.cam.rpos - 30;
+    }
+    else {
+    cposViewCam =
       (sensor_state_.cam.lpos + sensor_state_.cam.rpos) / 2.f;
+    }
+    /*
     float cposCam = 
       (sensor_state_.cam.lposSMA + sensor_state_.cam.rposSMA) / 2.f;
-
-    int angle;
-    int speed;
-    control_state::Mode mode;
-    angle = (int)((cposViewCam) / ANGLE_DIV + .5f);
-    angle = correctAngle(angle);
-    speed = 5;
-    mode = control_state::Mode::Go;
-    /*
-    if(control_state_.started){
-      control_state_.reduce(mode, angle, speed);
-      pub.publish(create_msg());
-    }
     */
+    int angle;
+    float speed;
+    control_state::Mode mode;
+    angle = (int)((cposViewCam-320) / ANGLE_DIV + .5f);
 
-    control_state_.reduce(mode, angle, speed);
+    angle = correctAngle(angle);
+    std::cout << "Center " << cposViewCam << "Angle " << angle << std::endl;
+    speed = 0;
+    
+    
+
+
+    // mode = control_state::Mode::Go;
+
+    if (new_id == 2 || new_id == 3){
+      if (sensor_state_.stop_line.detected){
+        control_state_.reduce(mode, angle, 0);
+        pub.publish(create_msg());
+        sleep(7);
+        control_state_.reduce(mode, angle, 0);
+        pub.publish(create_msg());
+        sleep(8);
+      }
+      else {
+      control_state_.reduce(mode, angle, 0);
+      }
+    }
+    else{
+      control_state_.reduce(mode, angle, 0);
+
+    }
+    
     pub.publish(create_msg());
-    std::cout<< angle << std::endl;
+
     
   }
 }
@@ -139,6 +255,7 @@ int main(int argc, char** argv)
 
   while (ros::ok())
   {
+    
     ros::spinOnce();
     controller.control();
   }

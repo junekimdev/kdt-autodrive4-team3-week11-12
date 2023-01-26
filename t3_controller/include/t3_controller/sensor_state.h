@@ -64,24 +64,88 @@ struct Cam
   }
 };
 
+struct BoundingBox
+{
+  int id;
+  int xmin;
+  int ymin;
+  int xmax;
+  int ymax;
+  float probability;
+
+  BoundingBox()
+    : id(-1)
+   , xmin(0)
+   , ymin(0)
+   , xmax(0)
+   , ymax(0)
+   ,probability(0)
+   {};
+};
+
 struct Object
 {
+  std::vector<BoundingBox> boundingBoxes;
   void reduce(const t3_msgs::object_data::ConstPtr& msg)
   {
-  }
+    boundingBoxes.clear();
+    auto boxes = msg->bounding_boxes;
+    for(auto& box : boxes){
+      BoundingBox boundingBox = BoundingBox();
+      boundingBox.id = box.id;
+      boundingBox.xmin = box.xmin;
+      boundingBox.ymin = box.ymin;
+      boundingBox.xmax = box.xmax;
+      boundingBox.ymax = box.ymax;
+      boundingBox.probability = box.probability;
+      boundingBoxes.emplace_back(boundingBox);
+    }
+  };
 };
 
 struct StopLine
 {
+
+  bool detected;
+
+  StopLine()
+    : detected(false)
+  {};
+
   void reduce(const t3_msgs::stop_line_data::ConstPtr& msg)
   {
-  }
+    detected = msg->detected;
+  };
 };
 
 struct TrafficLight
 {
+
+  bool detected;
+  uint8_t color;
+  int count = 0;
+  BoundingBox boundingBox;
+  TrafficLight()
+    : color(-1),boundingBox(BoundingBox()),detected(false),count(0){};
+
+
   void reduce(const t3_msgs::traffic_light_data::ConstPtr& msg)
   {
+	if(msg->detected==false){
+		color = -1;
+		boundingBox = BoundingBox();
+		count = 0;
+	}else{
+		color = msg->color;
+		detected = msg->detected;
+		boundingBox.id = 5;
+		boundingBox.xmax = msg->bounding_box.xmax;
+		boundingBox.xmin = msg->bounding_box.xmin;
+		boundingBox.ymax = msg->bounding_box.ymax;
+		boundingBox.ymin = msg->bounding_box.ymin;
+		boundingBox.probability = msg->bounding_box.probability;
+	count = 1;
+	}
   }
 };
 

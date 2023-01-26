@@ -14,24 +14,26 @@ constexpr int16_t ANGLE_MAX = 50;
 enum struct Mode
 {
   Init,
-  Stop,
-  Go,
-  TurnLeft,
-  TurnRight
+  Left,
+  LeftPrepToStop,
+  LeftStop,
+  Right,
+  RightPrepToStop,
+  RightStop
 };
 
 struct State
 {
   Mode mode;
-  int16_t speed;
+  float speed;
   int16_t angle;
   bool started;
 
-  State() : mode(Mode::Stop), speed(0), angle(ANGLE_CENTER), started(false)
+  State() : mode(Mode::Init), speed(0), angle(ANGLE_CENTER), started(false)
   {
   }
 
-  void reduce(Mode mode, int angle, int speed){
+  void reduce(Mode mode, int angle, float speed){
     this->mode = mode;
     this->angle = angle;
     this->speed = speed;
