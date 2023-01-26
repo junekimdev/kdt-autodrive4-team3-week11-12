@@ -1,13 +1,15 @@
 #ifndef TRAFFIC_STATE_H
 #define TRAFFIC_STATE_H
+
+// Include ROS
 #include "ros/console.h"
 #include "ros/ros.h"
-#include <sensor_msgs/Image.h>
 #include "t3_msgs/BoundingBox.h"
 #include "t3_msgs/traffic_light_data.h"
 #include "t3_msgs/traffic_light_image.h"
-#include <opencv2/opencv.hpp>
-#include <vector>
+
+// Include OpenCV
+#include "opencv2/opencv.hpp"
 
 namespace sensor
 {
