@@ -17,6 +17,7 @@ const std::string NAME = "stop_line";
 const std::string SUB_TOPIC = "usb_cam/image_raw";
 const std::string PUB_TOPIC = "stop_line_data";
 
+constexpr int FREQ = 10;
 constexpr int WIDTH = 640;
 constexpr int HEIGHT = 480;
 constexpr int ROI_X = 100;
@@ -117,18 +118,14 @@ void StopLine::process()
 int main(int argc, char** argv)
 {
   ros::init(argc, argv, sensor::NAME);
+  ros::Rate rate(FREQ);
   sensor::StopLine stop_line;
   ROS_INFO("%s is ONLINE", sensor::NAME.c_str());
 
   while (ros::ok())
   {
+    rate.sleep();
     ros::spinOnce();
-    if (stop_line.enable_debug)
-    {
-      int k = cv::waitKey(1);
-      if (k == 27 || k == ' ')  // ESC key or space bar
-        break;
-    }
   }
   cv::destroyAllWindows();
   return 0;
