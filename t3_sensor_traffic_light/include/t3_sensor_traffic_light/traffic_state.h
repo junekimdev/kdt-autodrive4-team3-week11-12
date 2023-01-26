@@ -9,6 +9,8 @@
 #include <opencv2/opencv.hpp>
 #include <vector>
 
+namespace sensor
+{
 const std::string SUB_TOPIC = "traffic_light_image";
 const std::string PUB_TOPIC = "traffic_light_data";
 constexpr int IMG_SIZE = 352;
@@ -27,7 +29,7 @@ struct BoundingBox
     : id(bbox.id), probability(bbox.probability), xmin(bbox.xmin), ymin(bbox.ymin), xmax(bbox.xmax), ymax(bbox.ymax){};
 }
 
-struct Traffic
+struct TrafficLight
 {
 public:
   BoundingBox bounding_box;
@@ -36,9 +38,9 @@ public:
   int square;
   cv::Mat image;
   // RED = 0; YELLOW = 1; GREEN = 2;
-  int8_t color = -1;
+  int8_t color;
 
-  Traffic() : height(0), width(0), square(0), image(cv::Mat()){};
+  TrafficLight() : height(0), width(0), square(0), image(cv::Mat()), color(-1){};
 
   void update(const t3_msgs::traffic_light_image::ConstPtr& msg)
   {
@@ -50,15 +52,14 @@ public:
     square = height * width;
   };
 };
-
+}  // namespace sensor
 class Image_process
 {
 public:
   ros::NodeHandle node;
   ros::Subscriber sub;
-  ros::Subscriber sub_cam;
   ros::Publisher pub;
-  Traffic traffic;
+  TrafficLight traffic_light;
 
   Image_process()
   {
@@ -67,17 +68,17 @@ public:
   };
   void callbackTraffic(const t3_msgs::traffic_light_image::ConstPtr& msg)
   {
-    traffic->update(msg);
+    traffic_light->update(msg);
   };
   void publish()
   {
-    if (traffic.color != -1)
+    if (traffic_light.color != -1)
     {
-      t3_msgs::traffic_light_data msg;
+      t3_msgs::traffic_light_light_data msg;
       msg.header.stamp = ros::Time::now();
       msg.detected = true;
-      msg.color = traffic.color;
-      msg.bounding_box = traffic.bounding_box;
+      msg.color = traffic_light.color;
+      msg.bounding_box = traffic_light.bounding_box;
       pub.publish(msg);
     }
   };
@@ -85,7 +86,8 @@ public:
   {
     cv::Scalar lower_blue(160, 50, 50);
     cv::Scalar upper_blue(180, 255, 255);
-    cv::Mat roi = traffic.image(cv::Range(traffic.xmin_, traffic.xmax_), cv::Range(traffic.ymin_, traffic.ymax_));
+    BoundingBox bbox = traffic_light.bounding_box;
+    cv::Mat roi = traffic_light.image(cv::Range(bbox.xmin, bbox.xmax), cv::Range(bbox.ymin, bbox.ymax_));
 
     cv::Mat new_img;
     cv::cvtColor(roi, new_img, cv::COLOR_BGR2HSV);
@@ -97,7 +99,6 @@ public:
     cv::inRange(hsv_img, lower_blue, upper_blue, mask);
 
     cv::Mat mask_img;
-
     cv::bitwise_and(new_img, new_img, mask_img, mask);
 
     cv::Mat gray_img;
@@ -106,40 +107,40 @@ public:
     cv::Mat th_img;
     cv::threshold(gray_img, th_img, 1, 255, cv::THRESH_BINARY_INV);
 
-    int row = static_cast<int>(traffic.height * 416 * 0.3);
+    int row = static_cast<int>(traffic_light.height * 416 * 0.3);
 
     int count1 = 0;
     int count2 = 0;
     for (int i = 0; i < row; i++)
     {
-      for (int j = 0; j < traffic.width; j++)
+      for (int j = 0; j < traffic_light.width; j++)
       {
         if (th_img.at<int>(i, j) == 0)
         {
           count1++;
         }
-        else if (th_img.at<int>(i + static_cast<int>(0.66 * traffic.height * 416), j) == 0)
+        else if (th_img.at<int>(i + static_cast<int>(0.66 * traffic_light.height * 416), j) == 0)
         {
           count2++;
         }
       }
     }
-    int decision1 = static_cast<int>(count1 / traffic.square * 1000);
-    int decision2 = static_cast<int>(count2 / traffic.square * 1000);
+    int decision1 = static_cast<int>(count1 / traffic_light.square * 1000);
+    int decision2 = static_cast<int>(count2 / traffic_light.square * 1000);
     if (decision1 == 0 && decision2 == 0)
     {
-      traffic.color = 1;
+      traffic_light.color = 1;
     }
     else if (decision1 == 0 || decision2 == 0)
     {
-      traffic.color = 2;
+      traffic_light.color = 2;
     }
     else
     {
-      traffic.color = 0;
+      traffic_light.color = 0;
     }
 
-    if (traffic.color != -1)
+    if (traffic_light.color != -1)
     {
       publish();
     }
