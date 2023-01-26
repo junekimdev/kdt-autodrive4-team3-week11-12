@@ -63,7 +63,8 @@ struct Traffic
 };
 
 
-class Imageprocess{
+class Imageprocess
+{
     public:
 
         ros::NodeHandle node;
