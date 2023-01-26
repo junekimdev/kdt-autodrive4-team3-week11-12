@@ -10,16 +10,6 @@
 // Include OpenCV
 #include "opencv2/opencv.hpp"
 
-namespace color
-{
-const cv::Scalar WHITE = cv::Scalar(255, 255, 255);
-const cv::Scalar BLACK = cv::Scalar(0, 0, 0);
-const cv::Scalar RED = cv::Scalar(0, 0, 255);
-const cv::Scalar GREEN = cv::Scalar(0, 255, 0);
-const cv::Scalar BLUE = cv::Scalar(255, 0, 0);
-const cv::Scalar YELLOW = cv::Scalar(0, 255, 255);
-}  // namespace color
-
 namespace sensor
 {
 
@@ -60,8 +50,6 @@ public:
     node.param<bool>("sensor_stop_line_enable_debug", enable_debug, true);
     sub = node.subscribe(SUB_TOPIC, 1, &StopLine::callback, this);
     pub = node.advertise<t3_msgs::stop_line_data>(PUB_TOPIC, 1);
-    if (enable_debug)
-      cv::namedWindow(NAME);
   }
 
   void callback(const sensor_msgs::ImageConstPtr& msg);
