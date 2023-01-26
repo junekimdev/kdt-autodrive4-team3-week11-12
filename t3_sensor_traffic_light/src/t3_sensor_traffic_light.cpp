@@ -47,7 +47,7 @@ public:
     }
   };
 
-  void detect_traffic_light()
+  void process()
   {
     cv::Scalar lower_blue(160, 50, 50);
     cv::Scalar upper_blue(180, 255, 255);
@@ -124,7 +124,7 @@ int main(int argc, char** argv)
   while (ros::ok())
   {
     ros::spinOnce();
-    processor.process_image();
+    processor.process();
   }
 
   return 0;
