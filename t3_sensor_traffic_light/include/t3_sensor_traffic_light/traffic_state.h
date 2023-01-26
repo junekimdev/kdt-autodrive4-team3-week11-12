@@ -25,7 +25,7 @@ struct BoundingBox
   int ymax;
 
   BoundingBox() : id(5), probability(0.f), xmin(0), ymin(0), xmax(0), ymax(0){};
-  BoundingBox(t3_msgs::BoundingBox bbox)
+  BoundingBox(const t3_msgs::BoundingBox& bbox)
     : id(bbox.id), probability(bbox.probability), xmin(bbox.xmin), ymin(bbox.ymin), xmax(bbox.xmax), ymax(bbox.ymax){};
 }
 
@@ -36,29 +36,24 @@ public:
   int height;
   int width;
   int square;
-  cv::Mat image;
   // RED = 0; YELLOW = 1; GREEN = 2;
   int8_t color;
 
-  TrafficLight() : height(0), width(0), square(0), image(cv::Mat()), color(-1){};
-
-  void update(const t3_msgs::traffic_light_image::ConstPtr& msg)
+  TrafficLight() : height(0), width(0), square(0), color(-1){};
+  TrafficLight(const t3_msgs::BoundingBox& bbox)
+    : bounding_box(bbox), height(bbox.ymax - bbox.ymin), width(bbox.xmax - bbox.xmin), color(-1)
   {
-    image = cv::Mat(IMG_SIZE, IMG_SIZE, CV_8UC3, const_cast<uchar*>(&msg->image_data[0]), msg->step);
-    bounding_box = BoundingBox(msg->bounding_box);
-
-    height = bounding_box.ymax - bounding_box.ymin;
-    width = bounding_box.xmax - bounding_box.xmin;
     square = height * width;
   };
 };
-}  // namespace sensor
+
 class Image_process
 {
 public:
   ros::NodeHandle node;
   ros::Subscriber sub;
   ros::Publisher pub;
+  cv::Mat light_image;
   TrafficLight traffic_light;
 
   Image_process()
@@ -68,7 +63,8 @@ public:
   };
   void callbackTraffic(const t3_msgs::traffic_light_image::ConstPtr& msg)
   {
-    traffic_light->update(msg);
+    light_image = cv::Mat(IMG_SIZE, IMG_SIZE, CV_8UC3, const_cast<uchar*>(&msg->image_data[0]), msg->step);
+    traffic_light = TrafficLight(msg);
   };
   void publish()
   {
@@ -87,7 +83,7 @@ public:
     cv::Scalar lower_blue(160, 50, 50);
     cv::Scalar upper_blue(180, 255, 255);
     BoundingBox bbox = traffic_light.bounding_box;
-    cv::Mat roi = traffic_light.image(cv::Range(bbox.xmin, bbox.xmax), cv::Range(bbox.ymin, bbox.ymax_));
+    cv::Mat roi = light_image(cv::Range(bbox.xmin, bbox.xmax), cv::Range(bbox.ymin, bbox.ymax_));
 
     cv::Mat new_img;
     cv::cvtColor(roi, new_img, cv::COLOR_BGR2HSV);
@@ -147,4 +143,5 @@ public:
   };
 };
 
+}  // namespace sensor
 #endif
