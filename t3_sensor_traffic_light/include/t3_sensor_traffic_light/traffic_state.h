@@ -20,8 +20,9 @@ struct BoundingBox
   int xmax;
   int ymax;
 
+  BoundingBox() : probability(0.f), xmin(0), ymin(0), xmax(0), ymax(0){};
   BoundingBox(float probability, int xmin, int ymin, int xmax, int ymax)
-    : probability(0), xmin(0), ymin(0), xmax(0), ymax(0){};
+    : probability(probability), xmin(xmin), ymin(ymin), xmax(xmax), ymax(ymax){};
 }
 
 struct Traffic
