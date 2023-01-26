@@ -39,7 +39,7 @@ struct Traffic
         int8_t color_= -1;
         bool detected;
     
-    :height(0),weight(0),square(0),center_x(0),center_y(0),color_(-1),detected(false){};
+    :height(0),weight(0),square(0),center_x(0),center_y(0),color_(-1),detected(false)
     {
         image = cv::Mat::zeros(352,352,CV_8UC3);
     };
