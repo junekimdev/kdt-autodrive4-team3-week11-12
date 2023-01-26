@@ -118,8 +118,8 @@ void StopLine::process()
 int main(int argc, char** argv)
 {
   ros::init(argc, argv, sensor::NAME);
-  ros::Rate rate(sensor::FREQ);
   sensor::StopLine stop_line;
+  ros::Rate rate(sensor::FREQ);
   ROS_INFO("%s is ONLINE", sensor::NAME.c_str());
 
   while (ros::ok())
