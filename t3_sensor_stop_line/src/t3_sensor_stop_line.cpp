@@ -88,9 +88,9 @@ void StopLine::process()
   cv::Mat gray_image;
   cv::Mat blur_image;
   cv::Mat canny_image;
-  cv::cvtColor(this->vFrame, this->vFrame, cv::COLOR_BGR2RGB);
+  cv::cvtColor(vFrame, vFrame, cv::COLOR_BGR2RGB);
 
-  cv::cvtColor(this->vFrame, gray_image, cv::COLOR_RGB2GRAY);
+  cv::cvtColor(vFrame, gray_image, cv::COLOR_RGB2GRAY);
   cv::GaussianBlur(gray_image, blur_image, cv::Size(GAUSSIAN_KERNEL_SIZE, GAUSSIAN_KERNEL_SIZE), GAUSSIAN_SIGMA);
   cv::Canny(blur_image, canny_image, CANNY_THRESH_1, CANNY_THRESH_2);
   cv::Mat roi = canny_image(cv::Rect(ROI_X, ROI_Y, ROI_W, ROI_H));
