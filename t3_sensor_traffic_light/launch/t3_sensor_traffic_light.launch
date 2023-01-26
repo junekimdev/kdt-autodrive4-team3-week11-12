@@ -3,5 +3,6 @@
 <launch>
 
   <!-- processor -->
-  <node name="detect_traffic_light" pkg="t3_sensor_traffic_light" type="t3_sensor_traffic_light" output="screen"/>
+  <include file="$(find t3_sendor_object)/launch/t3_sendor_object.launch"/>
+  <node name="traffic_light" pkg="t3_sensor_traffic_light" type="t3_sensor_traffic_light" output="screen"/>
 </launch>
