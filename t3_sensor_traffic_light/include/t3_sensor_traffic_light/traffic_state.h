@@ -42,7 +42,8 @@ public:
   void update(const t3_msgs::traffic_light_image::ConstPtr& msg)
   {
     image = cv::Mat(IMG_SIZE, IMG_SIZE, CV_8UC3, const_cast<uchar*>(&msg->image_data[0]), msg->step);
-    bounding_box = BoundingBox(msg->bounding_box.probability, msg->xmin, msg->ymin, msg->xmax, msg->ymax);
+    t3_msgs::BoundingBox img_bbox = msg->bounding_box;
+    bounding_box = BoundingBox(img_bbox.probability, img_bbox.xmin, img_bbox.ymin, img_bbox.xmax, img_bbox.ymax);
 
     height = bounding_box.ymax - bounding_box.ymin;
     width = bounding_box.xmax - bounding_box.xmin;
