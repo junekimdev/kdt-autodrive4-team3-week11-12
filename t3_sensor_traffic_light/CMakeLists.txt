@@ -3,7 +3,6 @@ project(t3_sensor_traffic_light)
 
 find_package(catkin REQUIRED COMPONENTS
   roscpp
-  sensor_msgs
   t3_msgs
   t3_sensor_object
 )
@@ -15,6 +14,7 @@ catkin_package(
 )
 
 include_directories(
+  include
   ${catkin_INCLUDE_DIRS}
   ${OpenCV_INCLUDE_DIRS}
 )
