@@ -30,7 +30,7 @@ public:
   void callbackTraffic(const t3_msgs::traffic_light_image::ConstPtr& msg)
   {
     light_image = cv::Mat(IMG_SIZE, IMG_SIZE, CV_8UC3, const_cast<uchar*>(&msg->image_data[0]), msg->step);
-    traffic_light = TrafficLight(msg);
+    traffic_light = TrafficLight(msg->bounding_box);
   };
   void publish()
   {
