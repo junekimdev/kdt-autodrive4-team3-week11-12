@@ -98,18 +98,28 @@ struct Object
 
 struct StopLine
 {
+
+  bool detected;
+
+  StopLine()
+    : detected(false)
+  {};
+
   void reduce(const t3_msgs::stop_line_data::ConstPtr& msg)
   {
+    detected = msg->detected;
+  };
   }
 };
 
 struct TrafficLight
 {
 
+  bool detected;
   uint8_t color;
   BoundingBox boundingBox;
   TrafficLight()
-    : color(-1),bounding(BoundingBox()){};
+    : color(-1),bounding(BoundingBox()),detected(false){};
 
 
   void reduce(const t3_msgs::traffic_light_data::ConstPtr& msg)

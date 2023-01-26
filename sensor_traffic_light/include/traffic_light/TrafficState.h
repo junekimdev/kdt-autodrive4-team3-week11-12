@@ -31,11 +31,11 @@ struct Traffic
         int height_;
         int weight_;
         int square_;
-        cv::Mat image_={};
+        cv::Mat image_;
         // RED = 0; YELLOW = 1; GREEN = 2;
         int8_t color_= -1;
     
-    :height_(0),weight_(0),square_(0){};
+    :height_(0),weight_(0),square_(0),image_(cv::Mat(352,352,CV_8UC3)){};
 
     void update(const t3_msgs::traffic_light_image::ConstPtr& msg){
         image_ = cv::Mat(352, 352, CV_8UC3, const_cast<uchar*>(&msg->data[0]), msg->step);
@@ -76,9 +76,9 @@ class Image_process{
 
 
         };
-        void process_image(){
-            cv::Scalar lower_blue (110,100,100);
-            cv::Scalar upper_blue (125,125,125);
+        void detect_traffic_light(){
+            cv::Scalar lower_blue (160,50,50);
+            cv::Scalar upper_blue (180,255,255);
             cv::Mat roi = traffic.image_(cv::Range(traffic.xmin_, traffic.xmax_),cv::Range(traffic.ymin_,traffic.ymax_));
             
             cv::Mat new_img;
@@ -88,7 +88,7 @@ class Image_process{
             cv::cvtColor(new_img,hsv_img,cv::COLOR_BGR2HSV);
 
             cv::Mat mask;
-            cv::inRange(roi,lower_blue,upper_blue,mask);
+            cv::inRange(hsv_img,lower_blue,upper_blue,mask);
 
             cv::Mat mask_img;
 
@@ -108,7 +108,7 @@ class Image_process{
                 for (int j = 0; j< traffic.width_; j++){
                     if (th_img.at<int>(i,j)==0){
                         count1++;
-                    }else if (th_img.at<int>(i+static_cast<int>(0.65*traffic.height_*416),j)==0){
+                    }else if (th_img.at<int>(i+static_cast<int>(0.66*traffic.height_*416),j)==0){
                         count2++;
                     }
                 }
