@@ -27,7 +27,7 @@ struct BoundingBox
   BoundingBox() : id(5), probability(0.f), xmin(0), ymin(0), xmax(0), ymax(0){};
   BoundingBox(const t3_msgs::BoundingBox& bbox)
     : id(bbox.id), probability(bbox.probability), xmin(bbox.xmin), ymin(bbox.ymin), xmax(bbox.xmax), ymax(bbox.ymax){};
-}
+};
 
 struct TrafficLight
 {

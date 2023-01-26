@@ -45,7 +45,7 @@ void Processor::callback(const t3_msgs::traffic_light_image::ConstPtr& msg)
 
 void Processor::publish()
 {
-  t3_msgs::traffic_light_light_data msg;
+  t3_msgs::traffic_light_data msg;
   msg.header.stamp = ros::Time::now();
   msg.header.frame_id = NAME;
   msg.detected = true;
@@ -57,7 +57,7 @@ void Processor::publish()
 void Processor::process()
 {
   const auto& bbox = traffic_light.bounding_box;
-  cv::Mat roi = light_image(cv::Range(bbox.xmin, bbox.xmax), cv::Range(bbox.ymin, bbox.ymax_));
+  cv::Mat roi = light_image(cv::Range(bbox.xmin, bbox.xmax), cv::Range(bbox.ymin, bbox.ymax));
 
   cv::Mat new_img;
   cv::cvtColor(roi, new_img, cv::COLOR_BGR2HSV);
