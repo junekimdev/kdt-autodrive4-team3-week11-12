@@ -3,5 +3,5 @@
 <launch>
 
   <!-- processor -->
-  <node name="detect_traffic_light" pkg="sensor_traffic_light" type="image_process" output="screen"/>
+  <node name="detect_traffic_light" pkg="t3_sensor_traffic_light" type="t3_sensor_traffic_light" output="screen"/>
 </launch>
