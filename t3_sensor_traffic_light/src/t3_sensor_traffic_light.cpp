@@ -1,3 +1,10 @@
+// Include ROS
+#include "ros/console.h"
+#include "ros/ros.h"
+#include "t3_msgs/traffic_light_data.h"
+#include "t3_msgs/traffic_light_image.h"
+
+// Include header
 #include "t3_sensor_traffic_light/traffic_state.h"
 
 namespace sensor
