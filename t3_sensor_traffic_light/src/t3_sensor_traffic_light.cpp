@@ -13,7 +13,7 @@ const std::string NAME = "traffic_light";
 const std::string SUB_TOPIC = "traffic_light_image";
 const std::string PUB_TOPIC = "traffic_light_data";
 
-class Image_process
+class Processor
 {
 public:
   ros::NodeHandle node;
@@ -22,9 +22,9 @@ public:
   cv::Mat light_image;
   TrafficLight traffic_light;
 
-  Image_process()
+  Processor()
   {
-    this->sub = node.subscribe(SUB_TOPIC, 1, &Image_process::callbackTraffic, this);
+    this->sub = node.subscribe(SUB_TOPIC, 1, &Processor::callbackTraffic, this);
     this->pub = node.advertise<t3_msgs::traffic_light_data>(PUB_TOPIC, 1);
   };
   void callbackTraffic(const t3_msgs::traffic_light_image::ConstPtr& msg)
@@ -115,13 +115,13 @@ int main(int argc, char** argv)
 {
   // Init
   ros::init(argc, argv, sensor::NAME);
-  sensor::Image_process image_process;
+  sensor::Processor processor;
   ROS_INFO("%s is ONLINE", sensor::NAME.c_str());
 
   while (ros::ok())
   {
     ros::spinOnce();
-    image_process.process_image();
+    processor.process_image();
   }
 
   return 0;
