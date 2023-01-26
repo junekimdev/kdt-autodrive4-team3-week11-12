@@ -109,7 +109,6 @@ struct StopLine
   {
     detected = msg->detected;
   };
-  }
 };
 
 struct TrafficLight
