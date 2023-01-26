@@ -1,16 +1,17 @@
-#include "TrafficState.h"
+#include "t3_sensor_traffic_light/traffic_state.h"
 
 const std::string NODE_NAME = "traffic_state";
 
-int main(int argc, char** argv) {
+int main(int argc, char** argv)
+{
   // Init
   ros::init(argc, argv, NODE_NAME);
   Image_process image_process;
-  
-  
-  //ROS_INFO("%s is ONLINE", NODE_NAME.c_str());
 
-  while (ros::ok()) {
+  // ROS_INFO("%s is ONLINE", NODE_NAME.c_str());
+
+  while (ros::ok())
+  {
     ros::spinOnce();
     image_process.process_image();
   }
