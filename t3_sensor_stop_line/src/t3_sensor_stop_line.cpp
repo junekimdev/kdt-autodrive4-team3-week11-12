@@ -43,7 +43,6 @@ class StopLine
 
 public:
   bool enable_debug;
-  t3_msgs::stop_line_data msg;
 
   StopLine()
   {
@@ -73,6 +72,7 @@ void StopLine::callback(const sensor_msgs::ImageConstPtr& msg)
 
 void StopLine::publish()
 {
+  t3_msgs::stop_line_data msg;
   msg.header.stamp = ros::Time::now();
   msg.header.frame_id = NAME;
   msg.detected = detected;
