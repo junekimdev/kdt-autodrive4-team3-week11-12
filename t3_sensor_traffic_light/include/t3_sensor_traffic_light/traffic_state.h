@@ -15,24 +15,10 @@ namespace sensor
 {
 constexpr int IMG_SIZE = 352;
 
-struct BoundingBox
-{
-  int id;
-  float probability;
-  int xmin;
-  int ymin;
-  int xmax;
-  int ymax;
-
-  BoundingBox() : id(5), probability(0.f), xmin(0), ymin(0), xmax(0), ymax(0){};
-  BoundingBox(const t3_msgs::BoundingBox& bbox)
-    : id(bbox.id), probability(bbox.probability), xmin(bbox.xmin), ymin(bbox.ymin), xmax(bbox.xmax), ymax(bbox.ymax){};
-};
-
 struct TrafficLight
 {
 public:
-  BoundingBox bounding_box;
+  t3_msgs::BoundingBox bounding_box;
   int height;
   int width;
   int square;
