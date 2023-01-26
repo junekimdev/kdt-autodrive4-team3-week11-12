@@ -29,6 +29,19 @@ const std::string PUB_TOPIC = "stop_line_data";
 
 constexpr int WIDTH = 640;
 constexpr int HEIGHT = 480;
+constexpr int ROI_X = 100;
+constexpr int ROI_Y = 370;
+constexpr int ROI_W = 440;
+constexpr int ROI_H = 50;
+constexpr int GAUSSIAN_KERNEL_SIZE = 5;
+constexpr double GAUSSIAN_SIGMA = 2.;
+constexpr double CANNY_THRESH_1 = 50;
+constexpr double CANNY_THRESH_2 = 150;
+constexpr double HOUGH_RHO = 1.;
+constexpr double HOUGH_THETA = CV_PI / 180.0;
+constexpr int HOUGH_THRESH = 40;
+constexpr double HOUGH_MIN_LINE_LENGTH = 40.;
+constexpr double HOUGH_MAX_LINE_GAP = 5.;
 
 class StopLine
 {
@@ -36,9 +49,7 @@ class StopLine
   ros::Subscriber sub;
   ros::Publisher pub;
   bool detected;
-  int count;
   cv::Mat vFrame;
-
 
 public:
   bool enable_debug;
@@ -76,10 +87,11 @@ void StopLine::publish()
 {
   msg.header.stamp = ros::Time::now();
   msg.header.frame_id = NAME;
+  msg.detected = detected;
   pub.publish(msg);
-  
+
   if (enable_debug)
-    ROS_INFO("stop line detected: %s", msg.detected ? "true" : "false");
+    ROS_INFO("stop line detected: %s", detected ? "true" : "false");
 }
 
 void StopLine::process()
@@ -89,30 +101,27 @@ void StopLine::process()
   cv::Mat canny_image;
   cv::cvtColor(this->vFrame, this->vFrame, cv::COLOR_BGR2RGB);
 
-  cv::cvtColor(this->vFrame,gray_image, cv::COLOR_RGB2GRAY);
-  cv::GaussianBlur(gray_image, blur_image, cv::Size(5, 5), 2);
-  cv::Canny(blur_image, canny_image, 50, 150);
-  cv::Mat roi = canny_image(cv::Rect(100, 370, 440, 50));
-  
+  cv::cvtColor(this->vFrame, gray_image, cv::COLOR_RGB2GRAY);
+  cv::GaussianBlur(gray_image, blur_image, cv::Size(GAUSSIAN_KERNEL_SIZE, GAUSSIAN_KERNEL_SIZE), GAUSSIAN_SIGMA);
+  cv::Canny(blur_image, canny_image, CANNY_THRESH_1, CANNY_THRESH_2);
+  cv::Mat roi = canny_image(cv::Rect(ROI_X, ROI_Y, ROI_W, ROI_H));
+
   std::vector<cv::Vec4i> all_lines;
-  cv::HoughLinesP(roi, all_lines, 1.0, CV_PI / 180.0, 40, 40, 5);
-  if (all_lines.size() >= 0){
-    count = 0;
-    for(size_t i = 0 ; i <all_lines.size(); i++){
-      cv::Vec4i l = all_lines[i];
-      if (abs(l[1]-l[3]) < 10)
-        //line(this->vFrame, cv::Point(l[0] +100, l[1]+370), cv::Point(l[2]+100, l[3]+370), cv::Scalar(0,0,255), 3, cv::LINE_AA);
+  cv::HoughLinesP(roi, all_lines, HOUGH_RHO, HOUGH_THETA, HOUGH_THRESH, HOUGH_MIN_LINE_LENGTH, HOUGH_MAX_LINE_GAP);
+  detected = false;
+  int count = 0;
+  if (all_lines.size() >= 0)
+  {
+    for (const auto& line : all_lines)
+    {
+      if (abs(line[1] - line[3]) < 10)
         count++;
     }
   }
   if (count >= 4)
-    msg.detected = true;
-  else 
-    msg.detected = false;
+    detected = true;
 
-  this->publish();
-  //cv::imshow(NAME, this->vFrame);
-
+  publish();
 }
 
 }  // namespace sensor
