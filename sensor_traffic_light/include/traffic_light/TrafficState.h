@@ -154,7 +154,7 @@ class Imageprocess
             }else if (max>100)
             {
                 // Green
-                traffic.color_ = 0;
+                traffic.color_ = 2;
             }else
             {
                 // Turn Off
