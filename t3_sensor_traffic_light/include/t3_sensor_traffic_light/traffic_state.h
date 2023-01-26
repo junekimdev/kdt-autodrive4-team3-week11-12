@@ -29,7 +29,7 @@ struct BoundingBox
 struct Traffic
 {
 public:
-  BoundingBox boundingBox;
+  BoundingBox bounding_box;
   int height;
   int width;
   int square;
@@ -42,10 +42,10 @@ public:
   void update(const t3_msgs::traffic_light_image::ConstPtr& msg)
   {
     image = cv::Mat(IMG_SIZE, IMG_SIZE, CV_8UC3, const_cast<uchar*>(&msg->image_data[0]), msg->step);
-    boundingBox = BoundingBox(msg->bounding_box.probability, msg->xmin, msg->ymin, msg->xmax, msg->ymax);
+    bounding_box = BoundingBox(msg->bounding_box.probability, msg->xmin, msg->ymin, msg->xmax, msg->ymax);
 
-    height = boundingBox.ymax - boundingBox.ymin;
-    width = boundingBox.xmax - boundingBox.xmin;
+    height = bounding_box.ymax - bounding_box.ymin;
+    width = bounding_box.xmax - bounding_box.xmin;
     square = height * width;
   };
 };
