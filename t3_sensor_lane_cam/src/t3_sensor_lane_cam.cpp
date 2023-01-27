@@ -12,12 +12,12 @@
 
 namespace color
 {
-static constexpr cv::Scalar WHITE = cv::Scalar(255, 255, 255);
-static constexpr cv::Scalar BLACK = cv::Scalar(0, 0, 0);
-static constexpr cv::Scalar RED = cv::Scalar(0, 0, 255);
-static constexpr cv::Scalar GREEN = cv::Scalar(0, 255, 0);
-static constexpr cv::Scalar BLUE = cv::Scalar(255, 0, 0);
-static constexpr cv::Scalar YELLOW = cv::Scalar(0, 255, 255);
+const cv::Scalar WHITE = cv::Scalar(255, 255, 255);
+const cv::Scalar BLACK = cv::Scalar(0, 0, 0);
+const cv::Scalar RED = cv::Scalar(0, 0, 255);
+const cv::Scalar GREEN = cv::Scalar(0, 255, 0);
+const cv::Scalar BLUE = cv::Scalar(255, 0, 0);
+const cv::Scalar YELLOW = cv::Scalar(0, 255, 255);
 }  // namespace color
 
 namespace sensor
