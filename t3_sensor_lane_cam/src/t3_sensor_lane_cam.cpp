@@ -38,7 +38,7 @@ const cv::Rect ROI_L_RECT =
 const cv::Rect ROI_R_RECT =
     cv::Rect(cv::Point(WIDTH_HALF, SCAN_ROW - ROI_HEIGHT_HALF), cv::Point(WIDTH - 1, SCAN_ROW + ROI_HEIGHT_HALF));
 
-cv::Point GetLinePositionInside(const cv::Mat& src, bool isLeft, bool enable_debug = true)
+cv::Point GetLinePositionInside(const cv::Mat& src, bool isLeft)
 {
   // Smooth out
   cv::Mat smooth;
@@ -69,14 +69,6 @@ cv::Point GetLinePositionInside(const cv::Mat& src, bool isLeft, bool enable_deb
     std::swap(min_point, max_point);
   }
 
-  if (enable_debug)
-  {
-    cv::Mat out;
-    cv::cvtColor(canny, out, cv::COLOR_GRAY2BGR);
-    cv::drawMarker(out, min_point, Color::YELLOW, cv::MARKER_TILTED_CROSS, 10, 2, cv::LINE_AA);
-    cv::drawMarker(out, max_point, Color::BLUE, cv::MARKER_TILTED_CROSS, 10, 2, cv::LINE_AA);
-    cv::imshow(isLeft ? "left_roi" : "right_roi", out);
-  }
   return isLeft ? max_point : min_point;
 }
 
@@ -148,8 +140,8 @@ void LaneCam::process()
   // Find lines
   const cv::Mat roiL = grayFrame(ROI_L_RECT);
   const cv::Mat roiR = grayFrame(ROI_R_RECT);
-  const std::vector<cv::Point> pL = GetLinePositionInside(roiL, true, enable_debug) + ROI_L_RECT.tl();
-  const std::vector<cv::Point> pR = GetLinePositionInside(roiR, true, enable_debug) + ROI_R_RECT.tl();
+  const std::vector<cv::Point> pL = GetLinePositionInside(roiL, true) + ROI_L_RECT.tl();
+  const std::vector<cv::Point> pR = GetLinePositionInside(roiR, true) + ROI_R_RECT.tl();
   const cv::Point pC = (pL + pR) / 2;
 
   if (enable_debug)
@@ -159,7 +151,7 @@ void LaneCam::process()
     cv::drawMarker(vFrame, cv::Point(lpos, SCAN_ROW), color::YELLOW, cv::MARKER_TILTED_CROSS, 10, 2, cv::LINE_AA);
     cv::drawMarker(vFrame, cv::Point(rpos, SCAN_ROW), color::BLUE, cv::MARKER_TILTED_CROSS, 10, 2, cv::LINE_AA);
     cv::line(vFrame, cv::Point(0, SCAN_ROW), cv::Point(WIDTH, SCAN_ROW), color::BLUE, 1);
-    cv::imshow(WINDOW_TITLE, vFrame);
+    cv::imshow(NAME, vFrame);
   }
   publish();
 }
