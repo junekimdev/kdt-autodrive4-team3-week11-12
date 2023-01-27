@@ -27,88 +27,57 @@ const std::string SUB_TOPIC = "usb_cam/image_raw";
 const std::string PUB_TOPIC = "lane_data";
 
 constexpr int WIDTH = 640;
+constexpr int WIDTH_HALF = 320;
 constexpr int HEIGHT = 480;
-constexpr int SCAN_ROW = 380;
 constexpr double GAUSIAN_BLUR_SIGMA = 2.;
-constexpr int ROI_HEIGHT = 30;
-constexpr int ROI_Y = SCAN_ROW - (ROI_HEIGHT >> 1);
-constexpr int ROI_GAP = 8;
+constexpr int SCAN_ROW = 380;
+constexpr int ROI_HEIGHT_HALF = 20;
 
-const cv::Size ROI_SIZE_FULL = cv::Size(WIDTH, ROI_HEIGHT);
-const cv::Size ROI_SIZE_WIDE = cv::Size(WIDTH >> 1, ROI_HEIGHT);
-const cv::Size ROI_SIZE_NORM = cv::Size(WIDTH >> 2, ROI_HEIGHT);
-const cv::Rect ROI_FULL = cv::Rect(0, ROI_Y, WIDTH, ROI_HEIGHT);
-const cv::Rect ROI_L_NULL = cv::Rect(0, ROI_Y, 1, ROI_HEIGHT);
-const cv::Rect ROI_R_NULL = cv::Rect(WIDTH - 1, ROI_Y, 1, ROI_HEIGHT);
-const cv::Rect ROI_L_INIT = cv::Rect(cv::Point(0, ROI_Y), ROI_SIZE_WIDE);
-const cv::Rect ROI_R_INIT = cv::Rect(cv::Point(WIDTH >> 1, ROI_Y), ROI_SIZE_WIDE);
+const cv::Rect ROI_L_RECT =
+    cv::Rect(cv::Point(0, SCAN_ROW - ROI_HEIGHT_HALF), cv::Point(WIDTH_HALF - 1, SCAN_ROW + ROI_HEIGHT_HALF));
+const cv::Rect ROI_R_RECT =
+    cv::Rect(cv::Point(WIDTH_HALF, SCAN_ROW - ROI_HEIGHT_HALF), cv::Point(WIDTH - 1, SCAN_ROW + ROI_HEIGHT_HALF));
 
-inline cv::Rect getRoiRectL(int lx, int w, int rightCut = WIDTH)
+cv::Point GetLinePositionInside(const cv::Mat& src, bool isLeft, bool enable_debug = true)
 {
-  // Prep args
-  if (lx < 0)
-    lx = 0;
-  if (rightCut < 1)
-    rightCut = 1;
-  if (lx == rightCut)
-    lx--;
+  // Smooth out
+  cv::Mat smooth;
+  cv::GaussianBlur(src, smooth, cv::Size(), GAUSIAN_BLUR_SIGMA);
 
-  int rx = lx + w;
-  if (rx > rightCut)
-    rx = rightCut;
-  return cv::Rect(cv::Point(lx, ROI_Y), cv::Point(rx, ROI_Y + ROI_HEIGHT));
-}
+  // Find edges by Canny
+  cv::Mat canny;
+  cv::Canny(smooth, canny, 50, 150);
 
-inline cv::Rect getRoiRectR(int rx, int w, int leftCut = 0)
-{
-  // Prep args
-  if (rx > WIDTH)
-    rx = WIDTH;
-  if (leftCut > WIDTH - 1)
-    leftCut = WIDTH - 1;
-  if (rx == leftCut)
-    rx++;
+  // Scan a row
+  int scan_row = src.rows / 2;
+  cv::Mat a_row = canny.row(scan_row);
 
-  int lx = rx - w;
-  if (lx < leftCut)
-    lx = leftCut;
-  return cv::Rect(cv::Point(lx, ROI_Y), cv::Point(rx, ROI_Y + ROI_HEIGHT));
-}
+  // Find points of edges
+  std::vector<cv::Point> pts;
+  cv::findNonZero(a_row, pts);
 
-inline std::vector<int> convertToVideoPos(const std::vector<cv::Point>& pts, const int topLeftX, const int lostPos)
-{
-  int lp = pts[0].x + topLeftX, rp = pts[1].x + topLeftX;
-  if (rp - lp < 1)  // lane lost
+  // Set min/max points
+  cv::Point min_point(0, scan_row);
+  cv::Point max_point(src.cols, scan_row);
+  if (pts.size())
   {
-    lp = lostPos;
-    rp = lostPos;
+    min_point = *pts.begin() + cv::Point(0, scan_row);
+    max_point = *pts.rbegin() + cv::Point(0, scan_row);
   }
-  return { lp, rp };
-}
+  else
+  {
+    std::swap(min_point, max_point);
+  }
 
-std::vector<cv::Point> findEdges(const cv::Mat& img)
-{
-  cv::Mat img32, blr, dx;
-  img.convertTo(img32, CV_32F);
-  cv::GaussianBlur(img32, blr, cv::Size(), GAUSIAN_BLUR_SIGMA);
-  cv::Sobel(blr, dx, CV_32F, 1, 0);
-
-  double leftsideV1, rightsideV1, leftsideV2, rightsideV2, leftsideV3, rightsideV3;
-  cv::Point leftsidePt1, rightsidePt1, leftsidePt2, rightsidePt2, leftsidePt3, rightsidePt3;
-
-  int centerY = ROI_HEIGHT / 2;
-  cv::Mat roi1 = dx.row(centerY);
-  cv::Mat roi2 = dx.row(centerY + ROI_GAP);
-  cv::Mat roi3 = dx.row(centerY - ROI_GAP);
-  cv::minMaxLoc(roi1, &leftsideV1, &rightsideV1, &leftsidePt1, &rightsidePt1);
-  cv::minMaxLoc(roi2, &leftsideV2, &rightsideV2, &leftsidePt2, &rightsidePt2);
-  cv::minMaxLoc(roi3, &leftsideV3, &rightsideV3, &leftsidePt3, &rightsidePt3);
-
-  cv::Point leftsidePt, rightsidePt;
-  leftsidePt.x = (int)((leftsidePt1.x + leftsidePt2.x + leftsidePt3.x) / 3.f + .5f);
-  rightsidePt.x = (int)((rightsidePt1.x + rightsidePt2.x + rightsidePt3.x) / 3.f + .5f);
-
-  return { leftsidePt, rightsidePt };
+  if (enable_debug)
+  {
+    cv::Mat out;
+    cv::cvtColor(canny, out, cv::COLOR_GRAY2BGR);
+    cv::drawMarker(out, min_point, Color::YELLOW, cv::MARKER_TILTED_CROSS, 10, 2, cv::LINE_AA);
+    cv::drawMarker(out, max_point, Color::BLUE, cv::MARKER_TILTED_CROSS, 10, 2, cv::LINE_AA);
+    cv::imshow(isLeft ? "left_roi" : "right_roi", out);
+  }
+  return isLeft ? max_point : min_point;
 }
 
 class LaneCam
@@ -117,8 +86,6 @@ class LaneCam
   ros::Subscriber sub;
   ros::Publisher pub;
   cv::Mat vFrame;
-  cv::Rect roiRectL;
-  cv::Rect roiRectR;
   bool leftDetected;
   bool rightDetected;
   int lpos;
@@ -127,8 +94,7 @@ class LaneCam
 public:
   bool enable_debug;
 
-  LaneCam()
-    : roiRectL(ROI_L_INIT), roiRectR(ROI_R_INIT), leftDetected(false), rightDetected(false), lpos(0), rpos(WIDTH - 1)
+  LaneCam() : leftDetected(false), rightDetected(false), lpos(0), rpos(WIDTH - 1)
   {
     node.param<bool>("sensor_lane_cam_enable_debug", enable_debug, true);
     sub = node.subscribe(SUB_TOPIC, 1, &Sensor::callback, this);
@@ -180,82 +146,19 @@ void LaneCam::process()
   cv::cvtColor(vFrame, grayFrame, cv::COLOR_BGR2GRAY);
 
   // Find lines
-  cv::Mat roiL = grayFrame(roiRectL);
-  cv::Mat roiR = grayFrame(roiRectR);
-  std::vector<cv::Point> ptsL = findEdges(roiL);
-  std::vector<cv::Point> ptsR = findEdges(roiR);
-  std::vector<int> pxL = convertToVideoPos(ptsL, roiRectL.x, 0);
-  std::vector<int> pxR = convertToVideoPos(ptsR, roiRectR.x, WIDTH - 1);
-
-  int left = cvRound((pxL[0] + pxL[1]) / 2.f);
-  int right = cvRound((pxR[0] + pxR[1]) / 2.f);
-  lpos = left;
-  rpos = right;
-
-  // Update roi for next
-  // When undetected, lpos & rpos will be kept as previous values
-  bool goodL = pxL[0] != pxL[1];
-  bool goodR = pxR[0] != pxR[1];
-  if (goodL && goodR)
-  {
-    // None lost
-    // lpos = left;
-    // rpos = right;
-
-    int lx = left - (ROI_SIZE_NORM.width >> 1);
-    int rx = right + (ROI_SIZE_NORM.width >> 1);
-    int mid = (int)((left + right) / 2.f + .5f);
-    roiRectL = getRoiRectL(lx, ROI_SIZE_NORM.width, mid);
-    roiRectR = getRoiRectR(rx, ROI_SIZE_NORM.width, mid);
-  }
-  else if (goodL)
-  {
-    // Right line lost
-    // lpos = left;
-
-    int lx = left - (ROI_SIZE_NORM.width >> 1);
-    int rx = right + (ROI_SIZE_WIDE.width >> 1);
-    roiRectL = getRoiRectL(lx, ROI_SIZE_NORM.width);  // the order is important
-    roiRectR = getRoiRectR(rx, ROI_SIZE_WIDE.width, roiRectL.br().x);
-  }
-  else if (goodR)
-  {
-    // Left line lost
-    // rpos = right;
-
-    int lx = left - (ROI_SIZE_WIDE.width >> 1);
-    int rx = right + (ROI_SIZE_NORM.width >> 1);
-    roiRectR = getRoiRectR(rx, ROI_SIZE_NORM.width);  // the order is important
-    roiRectL = getRoiRectL(lx, ROI_SIZE_WIDE.width, roiRectR.tl().x);
-  }
-  else
-  {
-    // All lost
-    if (leftDetected)
-    {
-      // Stand by to find L line
-      roiRectL = ROI_FULL;
-      roiRectR = ROI_R_NULL;
-    }
-    else if (rightDetected)
-    {
-      // Stand by to find R line
-      roiRectL = ROI_L_NULL;
-      roiRectR = ROI_FULL;
-    }
-  }
-  leftDetected = goodL;
-  rightDetected = goodR;
+  const cv::Mat roiL = grayFrame(ROI_L_RECT);
+  const cv::Mat roiR = grayFrame(ROI_R_RECT);
+  const std::vector<cv::Point> pL = GetLinePositionInside(roiL, true, enable_debug) + ROI_L_RECT.tl();
+  const std::vector<cv::Point> pR = GetLinePositionInside(roiR, true, enable_debug) + ROI_R_RECT.tl();
+  const cv::Point pC = (pL + pR) / 2;
 
   if (enable_debug)
   {
-    cv::rectangle(vFrame, roiRectL, BLACK, 2);
-    cv::rectangle(vFrame, roiRectR, BLACK, 2);
-    cv::drawMarker(vFrame, cv::Point(lpos, SCAN_ROW), YELLOW, cv::MARKER_TILTED_CROSS, 10, 2, cv::LINE_AA);
-    cv::drawMarker(vFrame, cv::Point(rpos, SCAN_ROW), BLUE, cv::MARKER_TILTED_CROSS, 10, 2, cv::LINE_AA);
-    cv::line(vFrame, cv::Point(0, SCAN_ROW), cv::Point(WIDTH, SCAN_ROW), BLUE, 1);
-    cv::line(vFrame, cv::Point(0, SCAN_ROW + ROI_GAP), cv::Point(WIDTH, SCAN_ROW + ROI_GAP), BLUE, 1);
-    cv::line(vFrame, cv::Point(0, SCAN_ROW - ROI_GAP), cv::Point(WIDTH, SCAN_ROW - ROI_GAP), BLUE, 1);
+    cv::rectangle(vFrame, ROI_L_RECT, BLACK, 2);
+    cv::rectangle(vFrame, ROI_R_RECT, BLACK, 2);
+    cv::drawMarker(vFrame, cv::Point(lpos, SCAN_ROW), color::YELLOW, cv::MARKER_TILTED_CROSS, 10, 2, cv::LINE_AA);
+    cv::drawMarker(vFrame, cv::Point(rpos, SCAN_ROW), color::BLUE, cv::MARKER_TILTED_CROSS, 10, 2, cv::LINE_AA);
+    cv::line(vFrame, cv::Point(0, SCAN_ROW), cv::Point(WIDTH, SCAN_ROW), color::BLUE, 1);
     cv::imshow(WINDOW_TITLE, vFrame);
   }
   publish();
