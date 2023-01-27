@@ -3,6 +3,7 @@ project(t3_sensor_traffic_light)
 
 find_package(catkin REQUIRED COMPONENTS
   roscpp
+  sensor_msgs
   t3_msgs
   t3_sensor_object
 )

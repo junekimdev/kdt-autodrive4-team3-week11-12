@@ -19,6 +19,8 @@ struct TrafficLight
 {
 public:
   t3_msgs::BoundingBox bounding_box;
+  int x;
+  int y;
   int height;
   int width;
   int square;
@@ -27,9 +29,14 @@ public:
 
   TrafficLight() : height(0), width(0), square(0), color(0){};
   TrafficLight(const t3_msgs::BoundingBox& bbox)
-    : bounding_box(bbox), height(bbox.ymax - bbox.ymin), width(bbox.xmax - bbox.xmin), color(0)
+    : bounding_box(bbox)
+    , x((int)bbox.xmin * 640 / 352)
+    , y((int)bbox.ymin * 480 / 352)
+    , height((int)bbox.ymax * 480 / 352 - (int)bbox.ymin * 480 / 352)
+    , width((int)bbox.xmax * 640 / 352 - (int)bbox.xmin * 640 / 352)
+    , color(0)
   {
-    square = height * width;
+    square = (int)height * width;
   };
 };
 
