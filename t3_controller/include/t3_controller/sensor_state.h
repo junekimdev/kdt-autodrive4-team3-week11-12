@@ -2,13 +2,14 @@
 #define SENSOR_STATE_H
 
 #include <vector>
+#include <numeric>
 
 #include "t3_msgs/lane_data.h"
 #include "t3_msgs/object_data.h"
 #include "t3_msgs/stop_line_data.h"
 #include "t3_msgs/traffic_light_data.h"
 
-namespace sensor
+namespace sensor_state
 {
 
 constexpr int WIDTH = 640;
@@ -18,8 +19,8 @@ constexpr int SMA_NUM = 10;
 struct Cam
 {
   int width;
-  bool leftDetected;
-  bool rightDetected;
+  bool left_detected;
+  bool right_detected;
   int lpos;
   int rpos;
   std::vector<int> lposMemo;
@@ -29,8 +30,8 @@ struct Cam
 
   Cam()
     : width(WIDTH)
-    , leftDetected(false)
-    , rightDetected(false)
+    , left_detected(false)
+    , right_detected(false)
     , lpos(0)
     , rpos(WIDTH - 1)
     , lposMemo(std::vector<int>(SMA_NUM, 0))
@@ -41,10 +42,10 @@ struct Cam
   }
   void reduce(const t3_msgs::lane_data::ConstPtr& msg)
   {
-    leftDetected = msg->leftDetected;
-    rightDetected = msg->rightDetected;
+    left_detected = msg->left_detected;
+    right_detected = msg->right_detected;
     width = msg->width;
-    if (msg->leftDetected)
+    if (msg->left_detected)
     {
       lpos = msg->lpos;
       lposMemo.erase(lposMemo.begin());
@@ -52,7 +53,7 @@ struct Cam
       lposSMA =
           static_cast<int>(std::accumulate(lposMemo.begin(), lposMemo.end(), 0) / static_cast<float>(SMA_NUM) + .5f);
     }
-    if (msg->rightDetected)
+    if (msg->right_detected)
     {
       rpos = msg->rpos;
       rposMemo.erase(rposMemo.begin());
@@ -84,15 +85,21 @@ struct BoundingBox
 
 struct Object
 {
-  BoundingBox boundingBox;
+  std::vector<BoundingBox> boundingBoxes;
   void reduce(const t3_msgs::object_data::ConstPtr& msg)
   {
-    boundingBox.id = msg->id;
-    boundingBox.xmin = msg->xmin;
-    boundingBox.ymin = msg->ymin;
-    boundingBox.xmax = msg->xmax;
-    boundingBox.ymax = msg->ymax;
-    boundingBox.probability = msg->probability;
+    boundingBoxes.clear();
+    auto boxes = msg->bounding_boxes;
+    for(auto& box : boxes){
+      BoundingBox boundingBox = BoundingBox();
+      boundingBox.id = box.id;
+      boundingBox.xmin = box.xmin;
+      boundingBox.ymin = box.ymin;
+      boundingBox.xmax = box.xmax;
+      boundingBox.ymax = box.ymax;
+      boundingBox.probability = box.probability;
+      boundingBoxes.emplace_back(boundingBox);
+    }
   };
 };
 
@@ -116,20 +123,29 @@ struct TrafficLight
 
   bool detected;
   uint8_t color;
+  int count = 0;
   BoundingBox boundingBox;
   TrafficLight()
-    : color(-1),bounding(BoundingBox()),detected(false){};
+    : color(-1),boundingBox(BoundingBox()),detected(false),count(0){};
 
 
   void reduce(const t3_msgs::traffic_light_data::ConstPtr& msg)
   {
-    color = msg->color;
-    boundingBox.id = 5;
-    boundingBox.xmax = msg->bounding.xmax;
-    boundingBox.xmin = msg->bounding.xmin;
-    boundingBox.ymax = msg->bounding.ymax;
-    boundingBox.ymin = msg->bounding.ymin;
-    boundingBox.probability = msg->probability;
+	if(msg->detected==false){
+		color = -1;
+		boundingBox = BoundingBox();
+		count = 0;
+	}else{
+		color = msg->color;
+		detected = msg->detected;
+		boundingBox.id = 5;
+		boundingBox.xmax = msg->bounding_box.xmax;
+		boundingBox.xmin = msg->bounding_box.xmin;
+		boundingBox.ymax = msg->bounding_box.ymax;
+		boundingBox.ymin = msg->bounding_box.ymin;
+		boundingBox.probability = msg->bounding_box.probability;
+	count = 1;
+	}
   }
 };
 

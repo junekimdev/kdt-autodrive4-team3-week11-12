@@ -35,7 +35,9 @@ struct Traffic
         // RED = 0; YELLOW = 1; GREEN = 2;
         int8_t color_= -1;
     
-    :height_(0),weight_(0),square_(0),image_(cv::Mat(352,352,CV_8UC3)){};
+    :height_(0),weight_(0),square_(0){
+        image_ = cv::Mat::zeros(352,352,CV_8UC3);
+    };
 
     void update(const t3_msgs::traffic_light_image::ConstPtr& msg){
         image_ = cv::Mat(352, 352, CV_8UC3, const_cast<uchar*>(&msg->data[0]), msg->step);

@@ -1,7 +1,0 @@
-<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<!DOCTYPE launch>
-<launch>
-
-  <!-- processor -->
-  <node name="detect_traffic_light" pkg="sensor_traffic_light" type="image_process" output="screen"/>
-</launch>

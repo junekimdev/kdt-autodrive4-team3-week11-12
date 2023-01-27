@@ -1,34 +1,18 @@
 cmake_minimum_required(VERSION 3.0.2)
-project(CHANGE_THIS_TO_NAME)
+project(t3_controller)
 
 find_package(catkin REQUIRED COMPONENTS
   roscpp
-  sensor_msgs
-  std_msgs
+  t3_msgs
   xycar_msgs
-  message_generation
-  message_runtime
-)
-
-## Generate messages in the 'msg' folder
-add_message_files(
-  FILES
-  MY_MSG.msg
-)
-
-## Generate added messages and services with any dependencies listed here
-generate_messages(
-  DEPENDENCIES
-  sensor_msgs
-  std_msgs
 )
 
 catkin_package(
  INCLUDE_DIRS include
- CATKIN_DEPENDS message_runtime
 )
 
 include_directories(
+  include
   ${catkin_INCLUDE_DIRS}
 )
 
