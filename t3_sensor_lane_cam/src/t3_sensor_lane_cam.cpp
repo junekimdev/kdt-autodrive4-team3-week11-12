@@ -1,5 +1,6 @@
 #include <string>
 #include <vector>
+// #include <iostream>
 
 // Include ROS
 #include "ros/console.h"
@@ -47,6 +48,7 @@ cv::Point getLinePositionInside(const cv::Mat& src, bool is_left)
   // Find edges by Canny
   cv::Mat canny;
   cv::Canny(smooth, canny, 50, 150);
+  // cv::imshow(is_left ? "roiL" : "roiR", canny);
 
   // Scan a row
   int scan_row = src.rows / 2;
@@ -59,6 +61,8 @@ cv::Point getLinePositionInside(const cv::Mat& src, bool is_left)
   // Set min/max points
   cv::Point min_point(0, scan_row);
   cv::Point max_point(src.cols, scan_row);
+  // std::cout << (is_left ? "roiL" : "roiR") << " pts.size: " << pts.size() << '\n';
+
   if (pts.size())
   {
     min_point = *pts.begin() + cv::Point(0, scan_row);
@@ -141,8 +145,12 @@ void LaneCam::process()
   const cv::Mat roiL = gray_frame(ROI_L_RECT);
   const cv::Mat roiR = gray_frame(ROI_R_RECT);
   const cv::Point pL = getLinePositionInside(roiL, true) + ROI_L_RECT.tl();
-  const cv::Point pR = getLinePositionInside(roiR, true) + ROI_R_RECT.tl();
+  const cv::Point pR = getLinePositionInside(roiR, false) + ROI_R_RECT.tl();
   const cv::Point pC = (pL + pR) / 2;
+  left_detected = pL.x != 0;
+  right_detected = pR.x != WIDTH - 1;
+  lpos = pL.x;
+  rpos = pR.x;
 
   if (enable_debug)
   {
