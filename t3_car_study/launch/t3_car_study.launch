@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<!DOCTYPE launch>
+<launch>
+  <!-- motor -->
+  <include file="$(find xycar_motor)/launch/xycar_motor.launch"/>
+  
+  <!-- driver -->
+  <node name="car_study" pkg="t3_car_study" type="t3_car_study" output="screen"/>
+</launch>
