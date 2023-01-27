@@ -129,10 +129,6 @@ class yolov3_trt(object):
             # if xycar_image is empty, skip inference
             if xycar_image.shape[0] == 0:
                 continue
-            
-            if self.show_img:
-                cv2.imshow(NAME, xycar_image)
-                cv2.waitKey(1)
 
             image = self.preprocessor.process(xycar_image)
             # Store the shape of the original input image in WH format, we will need it for later
@@ -196,10 +192,11 @@ class yolov3_trt(object):
                     traffic_msg.header.stamp = rospy.Time.now()
                     traffic_msg.header.frame_id = NAME+"traffic"
                     traffic_msg.bounding_box = msg_bbox
-                    # image: NCHW format
-                    traffic_msg.step = image.shape[1]
-                    flat = image.reshape(1, image.shape[1]*image.shape[2]*image.shape[3])
-                    traffic_msg.image_data = flat.tobytes() if image.data.contiguous else flat.copy().tobytes()
+                    # img = np.array(np.transpose(image[0], (1,2,0)) * 255, dtype=np.uint8)
+                    # img = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
+                    # traffic_msg.step = img.shape[1]*image.shape[2]
+                    # flat = img.reshape(1, -1)
+                    # traffic_msg.image_data = flat.tobytes() if image.data.contiguous else flat.copy().tobytes()
                     self.traffic_pub.publish(traffic_msg)
         self.detection_pub.publish(obj_msg)
 
