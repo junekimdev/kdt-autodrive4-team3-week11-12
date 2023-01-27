@@ -90,7 +90,9 @@ void Processor::publish()
 void Processor::process()
 {
   cv::Mat frame = vFrame.clone();
-  cv::Mat roi = frame(cv::Rect(traffic_light.x, traffic_light.y, traffic_light.width, traffic_light.height));
+  int small_x = traffic_light.x + (traffic_light.width >> 2);
+  int small_w = traffic_light.width >> 1;
+  cv::Mat roi = frame(cv::Rect(small_x, traffic_light.y, small_w, traffic_light.height));
 
   cv::Mat new_img;
   cv::cvtColor(roi, new_img, cv::COLOR_BGR2HSV);
@@ -135,12 +137,12 @@ void Processor::process()
   }
   int decision1 = static_cast<int>(count1 * 100 / traffic_light.square);
   int decision2 = static_cast<int>(count2 * 100 / traffic_light.square);
-  int decision3 = static_cast<int>(count2 * 100 / traffic_light.square);
+  int decision3 = static_cast<int>(count3 * 100 / traffic_light.square);
 
   int min = std::min(decision1, decision3);
   int max = std::max(decision1, decision3);
 
-  ROS_INFO("D1 %d | D2 %d | D3 %d | min %d, | max %d", decision1, decision2, decision3, min, max);
+  // ROS_INFO("D1 %d | D2 %d | D3 %d | min %d, | max %d", decision1, decision2, decision3, min, max);
 
   if (decision2 > 100)
   {
