@@ -7,7 +7,7 @@
 namespace control_state
 {
 
-constexpr int16_t ANGLE_CENTER = 10;
+constexpr int16_t ANGLE_CENTER = 0;
 constexpr int16_t ANGLE_MIN = -50;
 constexpr int16_t ANGLE_MAX = 50;
 
