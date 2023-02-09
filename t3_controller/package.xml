@@ -17,12 +17,5 @@
   <build_export_depend>t3_msgs</build_export_depend>
   <exec_depend>t3_msgs</exec_depend>
 
-  <build_depend>xycar_msgs</build_depend>
-  <build_export_depend>xycar_msgs</build_export_depend>
-  <exec_depend>xycar_msgs</exec_depend>
-
-  <build_depend>t3_sensor_lane_cam</build_depend>
-  <build_export_depend>t3_sensor_lane_cam</build_export_depend>
-  <exec_depend>t3_sensor_lane_cam</exec_depend>
   <export></export>
 </package>
