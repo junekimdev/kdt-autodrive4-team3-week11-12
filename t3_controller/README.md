@@ -15,15 +15,15 @@ Number of states: 8
 
 ### State Relationship
 
-![stetes](state%20machine.svg)
+![stetes](./state_machine.svg)
 
-### Init State Flow Chart
+### Ready State Flow Chart
 
-![Init](./init%20state.svg)
+![Ready](./ready_state.svg)
 
 ## State Transition Table
 
-![table](state%20transition%20table.svg)
+![table](./state_transition_table.svg)
 
 > Stop group includes:
 >
