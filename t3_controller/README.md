@@ -2,9 +2,10 @@
 
 ## States
 
-Number of states: 7
+Number of states: 8
 
 - Init
+- Ready
 - Left
 - LeftPrepToStop
 - LeftStop
