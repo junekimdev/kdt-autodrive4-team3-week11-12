@@ -217,19 +217,19 @@ public:
 
 void Controller::callbackLane(const t3_msgs::lane_data::ConstPtr& msg)
 {
-  sensor_state.cam.reduce(msg)
+  sensor_state.cam.reduce(msg);
 }
 void Controller::callbackObject(const t3_msgs::object_data::ConstPtr& msg)
 {
-  sensor_state.object.reduce(msg)
+  sensor_state.object.reduce(msg);
 }
 void Controller::callbackStopLine(const t3_msgs::stop_line_data::ConstPtr& msg)
 {
-  sensor_state.stop_line.reduce(msg)
+  sensor_state.stop_line.reduce(msg);
 }
 void Controller::callbackTrafficLight(const t3_msgs::traffic_light_data::ConstPtr& msg)
 {
-  sensor_state.object.traffic_light.reduce(msg)
+  sensor_state.object.traffic_light.reduce(msg);
 }
 
 void Controller::publish()
