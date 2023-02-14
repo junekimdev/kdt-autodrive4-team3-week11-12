@@ -5,10 +5,8 @@
 #include <vector>
 #include <memory>
 
-// #include "t3_controller/sensor_state.h"
-// #include "t3_controller/control_timer.h"
-#include "sensor_state.h"
-#include "control_timer.h"
+#include "t3_controller/sensor_state.h"
+#include "t3_controller/control_timer.h"
 
 namespace control
 {
