@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<!DOCTYPE launch>
+<launch>
+
+  <!-- processor -->
+  <include file="$(find t3_sensor_object)/launch/t3_sensor_object.launch"/>
+  <node name="traffic_light" pkg="t3_sensor_traffic_light" type="t3_sensor_traffic_light" output="screen"/>
+</launch>

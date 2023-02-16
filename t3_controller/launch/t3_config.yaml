@@ -1,0 +1,5 @@
+sensor_lane_cam_enable_debug: true
+sensor_stop_line_enable_debug: true
+sensor_object_enable_debug: true
+sensor_traffic_light_enable_debug: true
+controller_enable_debug: true
