@@ -6,13 +6,10 @@
       - `include_file.hpp`
   - `launch/`
     - `launch_file.launch`
-  - `msg/`
-    - `msg.msg`
-  - `pkg/`
-    - `CMakefile.txt`
-    - `package.xml`
   - `src/`
     - `src_file.cpp`
+  - `CMakefile.txt`
+  - `package.xml`
 
 ## How to create a ROS package
 
